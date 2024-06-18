@@ -1,0 +1,13 @@
+ERROR:root:Exception occurred
+Traceback (most recent call last):
+  File "C:\Users\gabri\AppData\Local\Temp\ipykernel_9988\3119706326.py", line 9, in <module>
+    raise ValueError("Erro de exemplo")
+ValueError: Erro de exemplo
+ERROR:root:Exception in example_function
+Traceback (most recent call last):
+  File "C:\Users\gabri\AppData\Local\Temp\ipykernel_9988\3351272386.py", line 11, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gabri\AppData\Local\Temp\ipykernel_9988\3351272386.py", line 20, in example_function
+    raise ValueError("Erro de exemplo")
+ValueError: Erro de exemplo
