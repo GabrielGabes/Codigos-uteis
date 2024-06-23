@@ -1,4 +1,8 @@
 https://gitfluence.com/
+https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos
+
+# Exibir o histórico de commits realizados no projeto para revisar as mudanças anteriores:
+git log
 
 #################### SUBIR PROJETO PARA O GIT ####################
 fonte: 
@@ -8,10 +12,10 @@ https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projeto
 
 ####################
 
-# Para criar um repositório local você, digite o seguinte comando no terminal:
+# Inicializando repositorio
 git init
 
-# Para adicionar os arquivos no repositório local:
+# Adicionando arquivos
 git add .
 
 # Para criar um repositório local você, digite o seguinte comando no terminal:
@@ -53,7 +57,7 @@ git add .
 # Descrever as alterações feitas no projeto e criar um novo commit:
 git commit -m "Descrição das mudanças"
 
-# Exibir o histórico de commits realizados no projeto para revisar as mudanças anteriores:
+# Exibir o histórico
 git log
 
 # Enviar os commits locais para o repositório remoto:
@@ -64,3 +68,55 @@ git push origin main
 #################### BAIXAR NOVOS COMITS PARA O REPOSITORIO LOCAL ####################
 
 git pull origin main
+
+
+#################### Desfazendo um commit ####################
+
+# procurando commit rodado para ser desfeito
+git log
+
+# Execução
+git revert #id_do_commit#
+
+#################### Resetando um commit ####################
+# revisar -> https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/139319
+
+git reset --hard #id_do_commit_anterior#
+
+#################### Alterando mensagem do commit anterior ####################
+git commit --amend -m "Mensagem correta"
+
+#################### Exemplo de Readme ####################
+<h1>Jogo do número secreto</h1>
+
+<h2>�� Sobre</h2>
+<p>Projeto utilizado nos cursos de lógica de programação da Alura.</p>
+
+## �� Tecnologias
+<div>
+  <img src="https://img.shields.io/badge/HTML-239120?style=for-the-badge&logo=html5&logoColor=white">
+  <img src="https://img.shields.io/badge/CSS-239120?&style=for-the-badge&logo=css3&logoColor=white">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+</div>
+
+// Código omitido. 
+
+#################### Ignorando arquivos no repositório ####################
+# > Crie um arquivo chamado ".gitignore"
+# > lá coloque todos os arquivo o nome das pastas e arquivos especificos que não devem ser feito commit
+
+# para pastas:
+pasta_teste/
+
+# todos os arquivos com final ".pdf" (exemplo)
+*.pdf
+
+#################### Compartilhando códigos com Gist ####################
+# compartilhando trechos de código
+# revisar -> https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/139324
+
+#################### ####################
+#################### ####################
+
+# referencias: https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/145890
+# continuar em: https://cursos.alura.com.br/course/git-github-dominando-controle-versao-codigo

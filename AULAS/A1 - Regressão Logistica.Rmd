@@ -1,0 +1,125 @@
+```{r}
+df$desfecho = df$desfecho %>% as.factor()
+```
+
+
+```{r Contruindo modelo}
+modelo_nulo = glm(desfecho ~ 1, data=df, family = binomial)
+#modelo_nulo %>% summary()
+
+modelo_s = glm(desfecho ~ genero, data=df, family = binomial)
+#modelo_s %>% summary()
+
+modelo = glm(desfecho ~ genero + has, data=df, family = binomial)
+modelo %>% summary()
+```
+
+```{r}
+# Calcular odds ratio ou risk relative
+exp(coef(modelo)) %>% round(2)
+
+# Intervalos de confiança 
+confint(modelo) %>% round(2)
+exp(confint(modelo)) %>% round(2)
+
+(exp(cbind(OR= coef(modelo), confint(modelo)))) %>% round(2)
+```
+É considerado um problema para se preocupar quando os residuos padronizados ajustados estão fora da faixa [-3; 3]
+
+```{r Ausência de outliers/ pontos de alavancagem}
+plot(modelo, which = 5)
+#plot(modelo)
+
+summary(stdres(modelo))
+```
+
+```{r correlação entre as variáveis independentes}
+
+cor(df[c('idade','peso')])
+
+# inflação da variância (VIF)
+library(car)
+vif(modelo)
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
