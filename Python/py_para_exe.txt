@@ -1,0 +1,18 @@
+(0) - indo para o local onde esta o arquivo.py:
+cd #local#
+cd C:\Users\gabri\Downloads\PastaConfiavel
+
+(1)(2) - criando ambiente virtual:
+python -m venv venv
+venv\Scripts\activate
+
+(3)	- instalando pyinstaler e pacotes dependentes:
+pip install pyinstaller #bibliotecas 
+pip install pyinstaller pandas openpyxl numpy unidecode regex
+
+(4) - executando pyinstaller criando o arquivo .exe:
+(4.1) - executavel com caixa de CMD
+pyinstaller --onefile .\Programa_Nome.py
+(4.2) - executavel sem caixa de CMD
+pyinstaller --onefile --noconsole Programa_Nome.py
+pyinstaller --onefile --windowed Programa_Nome.py

@@ -1,0 +1,219 @@
+```{r Estimando ATE}
+library(survey)
+library(VGAM)
+
+df$outcome = df$idade
+
+estimando_ate = function(coluna_escolhida){
+  df$outcome = df[[coluna_escolhida]]
+  qtd_levels = df$outcome %>% length()
+  classe = df$outcome %>% class()
+  
+  if (classe == 'factor' || classe == 'character'){
+    if (qtd_levels == 2){
+      primeiro_level = levels( as.factor(df$outcome) )[1]
+      df$outcome = ifelse(df$outcome == primeiro_level, 0, 1)
+      classe = df$outcome %>% class()
+    }
+  }
+  
+  # Remover linhas com valores NA nas variáveis relevantes
+  df_clean <- na.omit(df[, c("outcome", "ozempic", "weights")])
+  # Criar o design do survey ponderado
+  design <- svydesign(ids = ~1, data = df_clean, weights = ~weights)
+    
+  # multinomial ponderado
+  if (classe == 'factor'){
+    
+     # Ajustar o modelo de regressão logística multinomial ponderado
+    model <- vglm(outcome ~ ozempic, family = multinomial(refLevel = 1), weights = df_clean$weights, data = df_clean)
+  
+  
+  } else { #  desfecho contínuo ou binário
+    model <- svyglm(outcome ~ ozempic, design = design)
+  }
+  
+  # Calcular o intervalo de confiança
+  confint_model <- confint(model)
+  
+  # Estimar o ATE usando diferença de médias ponderada
+  treated_mean <- svymean(~outcome, subset(design, ozempic == 1))
+  control_mean <- svymean(~outcome, subset(design, ozempic == 0))
+  ate <- coef(treated_mean) - coef(control_mean)
+  
+  # Calcular o intervalo de confiança para a diferença de médias
+  treated_ci <- confint(treated_mean)
+  control_ci <- confint(control_mean)
+  ate_ci <- c(ate - qnorm(0.975) * sqrt(treated_ci[2]^2 + control_ci[2]^2),
+              ate + qnorm(0.975) * sqrt(treated_ci[2]^2 + control_ci[2]^2))
+  
+  result <- data.frame(Variavel = NA, ATE = ate, IC_Lower = ate_ci[1], IC_Upper = ate_ci[2])
+  for (coluna in c('ATE','IC_Lower','IC_Upper')){
+    result = apply_rround(result, coluna, digitos = 2)
+  }
+  result$texto = paste0(result$ATE, ' (', result$IC_Lower, ' to ', result$IC_Upper, ')')
+  row.names(result) = NULL
+  if (nrow(result) > 1){
+    result = rbind(NA, result)
+  }
+  result$Variavel[1] = coluna_escolhida
+  return(result)
+}
+
+tabelona = estimando_ate('idade')[FALSE, ]
+
+for (coluna in c('idade','sexo','imc','asa')){
+  tabelinha = estimando_ate(coluna)
+  tabelona = rbind(tabelona, tabelinha)
+}
+
+tabelona %>% capture()
+
+
+```
+
+```{r}
+treatment = df$ozempic
+outcome = 
+
+# Calcular o ATE
+treat_mean = sum(outcome[treatment == 1] * weights[treatment == 1]) / sum(weights[treatment == 1])
+control_mean = sum(outcome[treatment == 0] * weights[treatment == 0]) / sum(weights[treatment == 0])
+ate = treat_mean - control_mean
+
+# Calcular a variância do ATE
+var_treat = sum(weights[treatment == 1]^2 * (outcome[treatment == 1] - treat_mean)^2) / (sum(weights[treatment == 1])^2)
+var_control = sum(weights[treatment == 0]^2 * (outcome[treatment == 0] - control_mean)^2) / (sum(weights[treatment == 0])^2)
+var_ate = var_treat + var_control
+
+# Calcular o erro padrão do ATE
+se_ate = sqrt(var_ate)
+
+# Calcular os intervalos de confiança
+alpha = 1 - conf_level
+z_value = qnorm(1 - alpha / 2)
+ci_lower = ate - z_value * se_ate
+ci_upper = ate + z_value * se_ate
+
+list(
+ate = ate,
+ci_lower = ci_lower,
+ci_upper = ci_upper)
+
+```
+
+
+
+```{r}
+
+# Função para calcular o ATE com intervalo de confiança
+ate_estimate_manual = function(outcome, treatment, weights, conf_level = 0.95) {
+  classe = outcome %>% class()
+  
+  # Calculando o ATE como a diferença nas probabilidades preditas
+  if (classe != "numeric"){
+    # Criando o design da pesquisa com os pesos
+    design <- svydesign(ids = ~1, weights = ~weights, data = df)
+
+    # Ajustando a regressão logística ponderada
+    logistic_model <- svyglm(outcome ~ ozempic, design = design, family = quasibinomial())
+    #logistic_model = glm(altobaixo~idade+imc+sexo+asa+dias_cat3, family='binomial', data=df, weights=ps_ipw$weights)
+    
+    # Predizendo as probabilidades para os grupos de tratamento e controle
+    predicted_probs <- predict(logistic_model, type = "response")
+
+    ate = mean(predicted_probs[df$ozempic == 1]) - mean(predicted_probs[df$ozempic == 0])
+    print(paste("ATE (analítico):", ate))
+    
+    # Calculando os intervalos de confiança para o ATE
+    conf_interval = confint(logistic_model)
+    ci_lower = conf_interval['ozempic1', "2.5 %"]
+    ci_upper = conf_interval['ozempic1', "97.5 %"]
+  }
+  else{
+    # Calcular o ATE
+    treat_mean = sum(outcome[treatment == 1] * weights[treatment == 1]) / sum(weights[treatment == 1])
+    control_mean = sum(outcome[treatment == 0] * weights[treatment == 0]) / sum(weights[treatment == 0])
+    ate = treat_mean - control_mean
+    
+    # Calcular a variância do ATE
+    var_treat = sum(weights[treatment == 1]^2 * (outcome[treatment == 1] - treat_mean)^2) / (sum(weights[treatment == 1])^2)
+    var_control = sum(weights[treatment == 0]^2 * (outcome[treatment == 0] - control_mean)^2) / (sum(weights[treatment == 0])^2)
+    var_ate = var_treat + var_control
+    
+    # Calcular o erro padrão do ATE
+    se_ate = sqrt(var_ate)
+    
+    # Calcular os intervalos de confiança
+    alpha = 1 - conf_level
+    z_value = qnorm(1 - alpha / 2)
+    ci_lower = ate - z_value * se_ate
+    ci_upper = ate + z_value * se_ate
+  }
+  
+  list(
+    ate = ate,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper
+  )
+}
+
+df$outcome = df$idade
+ate_results = ate_estimate_manual(df$outcome, df$ozempic, df$weights)
+print(paste("ATE:", ate_results$ate))
+print(paste("95% CI:", ate_results$ci_lower, "to", ate_results$ci_upper))
+
+df$outcome = df$sexo
+ate_results = ate_estimate_manual(df$outcome, df$ozempic, df$weights)
+print(paste("ATE:", ate_results$ate))
+print(paste("95% CI:", ate_results$ci_lower, "to", ate_results$ci_upper))
+
+df$outcome <- factor(ifelse(df$sexo == 1, "M", "F"))
+ate_results = ate_estimate_manual(df$outcome, df$ozempic, df$weights)
+print(paste("ATE:", ate_results$ate))
+print(paste("95% CI:", ate_results$ci_lower, "to", ate_results$ci_upper))
+
+#######################
+
+# Função para calcular o ATE com intervalo de confiança
+ate_estimate_bootstrap = function(outcome, treatment, weights, n_boot = 1000, conf_level = 0.95) {
+  # Calcular o ATE
+  treat_mean = sum(outcome[treatment == 1] * weights[treatment == 1]) / sum(weights[treatment == 1])
+  control_mean = sum(outcome[treatment == 0] * weights[treatment == 0]) / sum(weights[treatment == 0])
+  ate = treat_mean - control_mean
+  
+  # Função auxiliar para cálculo bootstrap
+  bootstrap_ate = function() {
+    indices = sample(seq_along(outcome), replace = TRUE)
+    outcome_boot = outcome[indices]
+    treatment_boot = treatment[indices]
+    weights_boot = weights[indices]
+    treat_mean_boot = sum(outcome_boot[treatment_boot == 1] * weights_boot[treatment_boot == 1]) / sum(weights_boot[treatment_boot == 1])
+    control_mean_boot = sum(outcome_boot[treatment_boot == 0] * weights_boot[treatment_boot == 0]) / sum(weights_boot[treatment_boot == 0])
+    treat_mean_boot - control_mean_boot
+  }
+  
+  # Executar o bootstrap
+  bootstrap_ates = replicate(n_boot, bootstrap_ate())
+  
+  # Calcular os intervalos de confiança
+  alpha = 1 - conf_level
+  lower_bound = quantile(bootstrap_ates, alpha / 2)
+  upper_bound = quantile(bootstrap_ates, 1 - alpha / 2)
+  
+  list(
+    ate = ate,
+    ci_lower = lower_bound,
+    ci_upper = upper_bound
+  )
+}
+
+#ate_results = ate_estimate_bootstrap(df$outcome, df$ozempic, df$weights)
+#print(paste("ATE:", ate_results$ate))
+#print(paste("95% CI:", ate_results$ci_lower, "to", ate_results$ci_upper))
+```
+
+```{r}
+
+```
+

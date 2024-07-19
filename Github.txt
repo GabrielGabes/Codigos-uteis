@@ -23,8 +23,8 @@ git commit -m "Subindo arquivos do projeto"
 
 ####################
 # Caso ainda não tenha feito... Para configurar a identidade do autor do commit:
-#git config --global user.email "gabriel_s_anjos@yahoo.com"
-#git config --global user.name "GabrielGabes"
+git config --global user.email "gabriel_s_anjos@yahoo.com"
+git config --global user.name "GabrielGabes"
 ####################
 
 # Para criar a branch Main:

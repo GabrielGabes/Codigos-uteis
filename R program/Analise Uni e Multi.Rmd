@@ -1,0 +1,540 @@
+```{r df ficticio}
+source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
+df
+```
+
+
+```{r Tabelas e teste de hipotese}
+
+coluna_analisada = 'desfecho'
+lista_coluna = names(df)[which(!(names(df) %in% c(coluna_analisada)))] 
+tabelona = summary_numerico_por_grupo_n_parametrico(df, "idade", coluna_analisada)[FALSE, ]
+
+for (coluna in lista_coluna){
+  classe = class(df[[coluna]])[1]
+  
+  if (classe == "numeric"){
+    if (normalidade_por_grupo_criterio(df, coluna, coluna_analisada) == TRUE){
+      tabelinha = summary_numerico_por_grupo_parametrico(df, coluna, coluna_analisada)
+    } 
+    else {
+      tabelinha = summary_numerico_por_grupo_n_parametrico(df, coluna, coluna_analisada)
+    }
+  } 
+  else if (classe == 'character' | classe == 'factor'){
+    tabelinha = conti(df, coluna_analisada, coluna, "col")
+  }
+  tabelona = rbind(tabelona, tabelinha)
+}
+
+colnames(tabelona)[colnames(tabelona) == "Overall"] = paste0("Overall 100% (n=", nrow(df[complete.cases(df[[coluna_analisada]]), ]), ")")
+niveis = levels(as.factor(df[[coluna_analisada]]))
+for (i in 1:length(niveis)){
+  nivel = niveis[i]
+  
+  table_d = table( df[[coluna_analisada]] )
+  prob_table = prop.table( table_d ) %>% round(4) * 100
+  
+  colnames(tabelona)[colnames(tabelona) == nivel] = paste0(nivel, ' ', prob_table[i], "% (n=", table_d[i], ")")
+}
+
+tabelona %>% capture()
+
+```
+
+```{r Analise Univariada}
+tabelona = analise_mod(glm(df[[coluna_analisada]]~df[['idade']], family='binomial'))
+
+tabelona$indice = NA
+tabelona = tabelona[, c("indice", setdiff(names(tabelona), "indice"))]
+tabelona = tabelona[FALSE, ]
+
+for (coluna in lista_coluna){
+  tabelinha = analise_mod(glm(df[[coluna_analisada]]~df[[coluna]], family='binomial'))
+  
+  tabelinha$indice = row.names(tabelinha)
+  tabelinha = tabelinha[, c("indice", setdiff(names(tabelinha), "indice"))]
+  
+  row.names(tabelinha) = 1:nrow(tabelinha)
+  
+  if (class(df[[coluna]]) != "numeric"){
+    tabelinha = rbind(NA,NA, tabelinha) #adicionando linha
+    tabelinha[["indice"]] = c(coluna,levels(as.factor(df[[coluna]])))
+  }
+  else{
+    tabelinha[["indice"]] = coluna
+  }
+  tabelona = rbind(tabelona, tabelinha)
+}
+tabelona$`Pr(>|z|)` = sapply(tabelona$`Pr(>|z|)`, function(x) ifelse(is.na(x), NA, retorne_p(x)))
+tabelona$OR = paste0( tabelona$OR, ' (', tabelona$`2.5 %`, ' - ', tabelona$`97.5 %`, ')' )
+tabelona$OR[tabelona$OR == 'NA (NA - NA)'] = NA
+tabelona$`2.5 %` = NULL
+tabelona$`97.5 %` = NULL
+tabelona %>% capture()
+```
+
+# Analise Multi Variada
+
+```{r Algoritmo de combinações}
+busca_em_grade = function(variavel_dependente, variaveis_independentes){
+  variaveis_independentes = sort(variaveis_independentes)
+  # Gerando todas as combinações de variáveis independentes
+  combinacoes = lapply(1:length(variaveis_independentes), function(x) combn(variaveis_independentes, x, simplify = FALSE))
+  combinacoes = unlist( combinacoes, recursive = FALSE)
+  
+  # Ajustar modelos para cada combinação e armazenar os resultados
+  resultados = data.frame(Combinacao = character(), stringsAsFactors = FALSE)
+  
+  for (comb in combinacoes) {
+    existencia = any(tabelona$Combinacao %in% paste(comb, collapse = "+"))
+    if (existencia == F){
+      resultados = rbind(resultados, data.frame(Combinacao = paste(comb, collapse = "+"), stringsAsFactors = FALSE))
+    }
+  }
+  resultados = resultados %>% distinct(Combinacao, .keep_all = TRUE)
+  return(resultados)
+}
+```
+
+# MODELOS DE CLASSIFICAÇÃO
+
+```{r Pacotes}
+library(pROC)
+library(caret)
+library(e1071)
+library(car) #VIF
+```
+
+```{r Grade com combinações de variaveis_listas}
+# Variaveis
+lista_idade = c('idade','idade_media')
+lista_altura = c('altura','alto_media')
+lista_peso = c('peso','imc','obeso')
+lista_momento = c('momento_1','momento_2','momento_3')
+
+# Gerando todas as combinações possíveis # Colapsando cada combinação em uma única string
+combinacoes = expand.grid(lista_idade, lista_altura, lista_peso, lista_momento)
+combinacoes = data.frame(lapply(combinacoes, as.character), stringsAsFactors = FALSE)
+combinacoes
+
+# Preparando
+variavel_dependente = 'desfecho'
+colunas = names(df)
+variaveis_independentes = colunas[!colunas %in% c('desfecho','desfecho_num' , lista_idade, lista_altura, lista_peso, lista_momento)]
+variaveis_independentes
+```
+
+```{r Aplicando Algoritmo de combinações}
+# Criando todas combinações
+variaveis_independentes = sort(variaveis_independentes)
+tabelona = data.frame(Combinacao = character(), stringsAsFactors = FALSE)
+
+for (linha in 1:nrow(combinacoes)){
+  variveis_comb = append(variaveis_independentes, combinacoes[linha,] %>% as.character())
+  tabela = busca_em_grade(variavel_dependente, variveis_comb)
+  tabelona = rbind(tabelona, tabela)
+}
+tabelona = tabelona %>% distinct(Combinacao, .keep_all = TRUE)
+
+# Criando Dataframe com todas combinações
+num_linhas = nrow(tabelona)
+novas_colunas = data.frame(
+  tp = rep(NA, num_linhas), tn = rep(NA, num_linhas), fp = rep(NA, num_linhas), fn = rep(NA, num_linhas),
+  Acuracia = rep(NA, num_linhas), Precisao = rep(NA, num_linhas), Especificidade = rep(NA, num_linhas), 
+  AUC_ROC = rep(NA, num_linhas), 
+  Pseudo_R2_McFadden = rep(NA, num_linhas), Pseudo_R2_Nagelkerke = rep(NA, num_linhas), 
+  AIC = rep(NA, num_linhas), BIC = rep(NA, num_linhas), VIF = rep(NA, num_linhas),
+  controle = rep(NA, num_linhas),
+  stringsAsFactors = FALSE
+)
+tabelona = cbind(tabelona, novas_colunas)
+tabelona
+```
+
+ESTA SEMPRE ATENTO NA VARIAVEL DESFECHO
+- sempre deve ser binaria com valores 0 ou 1
+
+```{r Função criação e avaliação de modelos}
+calcular_metricas = function(data_df, variavel_dependente, vars_independentes){
+  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+  formula_do_modelo = as.formula(formula_texto) 
+  vars_independentes_lista = unlist(strsplit(vars_independentes, split = "\\+"))
+  
+  tryCatch({
+    # Modelo
+    modelo = glm(formula=formula_do_modelo, family = binomial(), data = data_df)
+    #, weights = ps_ipw$weights)
+    
+    # Previsões e dados reais
+    df_clean = data_df[complete.cases(data_df[, c(variavel_dependente, vars_independentes_lista)]), ]
+    previsoes = predict(modelo, newdata = df_clean, type = "response")
+    
+    # Caso seja o modelo seja glm
+    previsoes_bin = ifelse(previsoes > 0.5, 1, 0)
+    dados_reais = df_clean[[variavel_dependente]]
+    
+    # Calcular métricas
+    matrix = confusionMatrix(as.factor(previsoes_bin), as.factor(dados_reais), positive = "1")
+    acuracia = matrix$overall['Accuracy']
+    sensibilidade = matrix$byClass['Sensitivity']  # Precisão é 'Pos Pred Value'
+    especificidade = matrix$byClass['Specificity']
+    auc = roc(dados_reais, previsoes)$auc
+    
+    # Pseudo R de Mc Fadden
+    pseudo_r2_McFadden = 1 - (modelo$deviance / modelo$null.deviance)
+    # Pseudo R de Nagelkerke
+    pseudo_r2_Nagelkerke = PseudoR2(modelo, which = "Nagelkerke")
+    
+    # Critério de informação de (AKAIKE/BAYESIANO)
+    aic = AIC(modelo)
+    bic = BIC(modelo)
+    
+    # VIF (Variance inflation factor) - Multicoliaridade
+    if (length(vars_independentes_lista) > 1) {
+      VIF = any(vif(modelo) > 10) %>% as.numeric()
+    } else {
+      VIF = 0
+    }
+    
+    # Extração dos valores de TP, TN, FP, FN
+    tp = matrix$table[2, 2]
+    tn = matrix$table[1, 1]
+    fp = matrix$table[1, 2]
+    fn = matrix$table[2, 1]
+    
+    return(c(tp, tn, fp, fn, 
+             acuracia, sensibilidade, especificidade, 
+             auc, 
+             pseudo_r2_McFadden, pseudo_r2_Nagelkerke, 
+             aic, bic, VIF,
+             'ok'))
+  }, error = function(e) {
+    print(paste0('erro com o modelo: ', formula_texto))
+    
+    return(c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 'erro'))
+  })
+}
+calcular_metricas(df, 'desfecho', tabelona$Combinacao[10])
+```
+
+```{r Aplicando algorimo de grade}
+for (linha in 1:nrow(tabelona)){
+  controle = tabelona$controle[linha]
+  if (controle == 'erro' | is.na(controle)){
+    tabelona[linha,] = c(tabelona$Combinacao[linha], 
+                         calcular_metricas(df, variavel_dependente, tabelona$Combinacao[linha]) )
+  } 
+}
+
+# Ultimas alterações
+tabelona[, c(-1,-ncol(tabelona))] <- lapply(tabelona[, c(-1,-ncol(tabelona)) ], as.double)
+
+tabelona$controle[tabelona$tp == 0 | tabelona$tn == 0] = 'inutil'
+cont(tabelona, 'controle')
+
+tabelona
+```
+
+```{r}
+tabelona %>% filter(controle == 'erro')
+```
+
+
+```{r Analisando}
+
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'idade')), 'AUC_ROC', cor_esc = 1) + labs(title='idade')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'altura')), 'AUC_ROC', cor_esc = 2) + labs(title='altura')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'peso')), 'Acuracia', cor_esc = 3) + labs(title='peso')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'genero')), 'Acuracia', cor_esc = 4) + labs(title='genero')
+
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'momento_1')), 'Acuracia', cor_esc = 5) + labs(title='momento_1')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'momento_2')), 'Acuracia', cor_esc = 6) + labs(title='momento_2')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'momento_3')), 'Acuracia', cor_esc = 7) + labs(title='momento_3')
+
+```
+
+
+###############################################################################
+
+
+# MODELOS DE REGRESSÃO
+
+```{r Grade com combinações de variaveis_listas}
+# Variaveis
+lista_idade = c('idade','idade_media')
+lista_altura = c('altura','alto_media')
+lista_peso = c('peso','imc','obeso')
+lista_momento = c('momento_1','momento_2','momento_3')
+
+# Gerando todas as combinações possíveis # Colapsando cada combinação em uma única string
+combinacoes = expand.grid(lista_idade, lista_altura, lista_peso, lista_momento)
+combinacoes = data.frame(lapply(combinacoes, as.character), stringsAsFactors = FALSE)
+combinacoes
+
+# Preparando
+variavel_dependente = 'desfecho_num'
+colunas = names(df)
+variaveis_independentes = colunas[!colunas %in% c('desfecho','desfecho_num' , lista_idade, lista_altura, lista_peso, lista_momento)]
+variaveis_independentes
+```
+
+```{r Aplicando Algoritmo de combinações}
+# Criando todas combinações
+variaveis_independentes = sort(variaveis_independentes)
+tabelona = data.frame(Combinacao = character(), stringsAsFactors = FALSE)
+
+for (linha in 1:nrow(combinacoes)){
+  variveis_comb = append(variaveis_independentes, combinacoes[linha,] %>% as.character())
+  tabela = busca_em_grade(variavel_dependente, variveis_comb)
+  tabelona = rbind(tabelona, tabela)
+}
+tabelona = tabelona %>% distinct(Combinacao, .keep_all = TRUE)
+
+# Criando Dataframe com todas combinações
+num_linhas = nrow(tabelona)
+novas_colunas = data.frame( 
+  MAE = rep(NA, num_linhas), MSE = rep(NA, num_linhas), RMSE = rep(NA, num_linhas), MAPE = rep(NA, num_linhas),
+  r_squared = rep(NA, num_linhas), r_squared_adj = rep(NA, num_linhas),
+  aic = rep(NA, num_linhas), bic = rep(NA, num_linhas), 
+  VIF = rep(NA, num_linhas),
+  controle = rep(NA, num_linhas),
+  stringsAsFactors = FALSE
+)
+tabelona = cbind(tabelona, novas_colunas)
+tabelona
+```
+
+```{r Função criação e avaliação de modelos}
+calcular_metricas = function(data_df, variavel_dependente, vars_independentes){
+  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+  formula_do_modelo = as.formula(formula_texto)
+  vars_independentes_lista = unlist(strsplit(vars_independentes, split = "\\+"))
+  
+  tryCatch({
+    # Modelo
+    modelo = lm(formula=formula_do_modelo, data = data_df)
+    # Previsões do modelo
+    predictions = predict(modelo)
+    
+    # MAE - Mean Absolute Error
+    MAE = mean(abs(data_df[[variavel_dependente]] - predictions))
+    
+    # MSE - Mean Squared Error
+    MSE = mean((data_df[[variavel_dependente]] - predictions)^2)
+    
+    # RMSE - Root Mean Squared Error
+    RMSE = sqrt(MSE)
+    
+    # MAPE - Mean Absolute Percentage Error
+    MAPE = mean(abs((data_df[[variavel_dependente]] - predictions) / data_df[[variavel_dependente]])) * 100
+
+    # Summary do modelo
+    summary_LM = modelo %>% summary()
+    
+    # R-quadrado (R²)
+    r_squared <- summary_LM$r.squared
+    
+    # R-quadrado ajustado
+    r_squared_adj <- summary_LM$adj.r.squared
+    
+    # Critério de informação de (AKAIKE/BAYESIANO)
+    aic = AIC(modelo)
+    bic = BIC(modelo)
+    
+    # VIF (Variance inflation factor) - Multicoliaridade
+    if (length(vars) > 1){
+      VIF = any(vif(modelo) > 10) %>% as.numeric()
+    } else{ 
+      VIF = 0
+    }
+    
+    # Caso for apenas uma var dependente e numérica
+    if (length(vars_independentes_lista) == 1){
+      var_independente = vars_independentes_lista[1]
+      # Verificando se ela é numerica
+      if (data_df[var_independente] %>% class() == 'numeric'){
+        # Analise Univariada Correlação
+        pearson_teste = cor.test(x=data_df[[var_independente]], 
+                                 y=data_df[[variavel_dependente]], 
+                                 method = 'pearson')
+        pearson_estimate = pearson_teste$estimate
+        pearson_P = pearson_teste$p.value %>% retorne_p()
+        # Correlação de Spearman
+        spearman_teste = cor.test(x=data_df[[var_independente]], 
+                                  y=data_df[[variavel_dependente]], 
+                                  method = 'spearman')
+        spearman_estimate = spearman_teste$estimate
+        spearman_P = spearman_teste$p.value %>% retorne_p()
+      }
+    }
+    
+    return(c(MAE, MSE, RMSE, MAPE, r_squared, r_squared_adj, aic, bic, VIF, 'OK'))
+    }, error = function(e) {
+      print(paste0('erro com o modelo: ', formula_texto))
+      
+      return(c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 'erro'))
+  })
+}
+calcular_metricas(df, 'desfecho_num', tabelona$Combinacao[10])
+```
+
+```{r Aplicando algorimo de grade}
+for (linha in 1:nrow(tabelona)){
+  controle = tabelona$controle[linha]
+  if (controle == 'erro' | is.na(controle)){
+    tabelona[linha,] = c(tabelona$Combinacao[linha], 
+                         calcular_metricas(df, 'desfecho_num', tabelona$Combinacao[linha]) )
+  }
+}
+# Ultimos ajustes
+tabelona[, c(-1,-ncol(tabelona))] <- lapply(tabelona[, c(-1,-ncol(tabelona)) ], as.double)
+
+#tabelona$controle[tabelona$tp == 0 | tabelona$tn == 0] = 'inutil'
+cont(tabelona, 'controle')
+
+tabelona
+```
+
+
+```{r}
+
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'idade')), 'MAE', cor_esc = 1) + labs(title='idade')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'altura')), 'MAE', cor_esc = 2) + labs(title='altura')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'peso')), 'MAE', cor_esc = 3) + labs(title='peso')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'genero')), 'MAE', cor_esc = 4) + labs(title='genero')
+
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'momento_1')), 'MAE', cor_esc = 5) + labs(title='momento_1')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'momento_2')), 'MAE', cor_esc = 6) + labs(title='momento_2')
+teste_normalidade(tabelona %>% filter(str_detect(Combinacao, 'momento_3')), 'MAE', cor_esc = 7) + labs(title='momento_3')
+
+```
+
+
+```{r Grafico Forest Plot}
+
+fore_plot = function(data_df, variavel_dependente, vars_independentes){
+  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+  formula_do_modelo = as.formula(formula_texto)
+  vars_independentes_lista = unlist(strsplit(vars_independentes, split = "\\+"))
+  
+  modelo = lm(formula=formula_do_modelo, data = data_df)
+  
+  summary_modelo = modelo %>% summary()
+  coeficientes = summary_modelo$coefficients
+  
+  ic = confint(modelo, method = "Wald")
+  #ic <- ic[-c(1), ]
+  
+  estimadores = cbind(coeficientes, ic)[-1,] %>% as.data.frame()
+  estimadores[["Variable"]] = rownames(estimadores)
+  
+  names(estimadores)[names(estimadores) == "Pr(>|t|)"] = "p_value"
+  names(estimadores)[names(estimadores) == "2.5 %"] = "IC_0"
+  names(estimadores)[names(estimadores) == "97.5 %"] = "IC_1"
+  estimadores = apply_retorne_p(estimadores, 'p_value')
+  estimadores$estimador = NA
+  for (i in 1:nrow(estimadores)){ 
+    estimadores$estimador[i] = paste0( rround(estimadores$Estimate[i],2), 
+                                       ' (', rround(estimadores$IC_0[i],2), 
+                                       ' to ', 
+                                       rround(estimadores$IC_1[i],2), ')')
+    estimadores$Variable[i] = adicionar_quebra_de_linha(estimadores$Variable[i], 20)
+  }
+  rownames(estimadores) = 1:nrow(estimadores)
+  
+  # Grafico Estimadores
+  plot1 = ggplot(estimadores, aes(y = Variable, x = Estimate)) + #
+    geom_point(shape = 18, size = 5, position = position_dodge(width = 0.5)) +  
+    geom_errorbarh(aes(xmin = IC_0, xmax = IC_1), 
+                   height = 0.25, position = position_dodge(width = 0.5)) +
+    geom_vline(xintercept = 0, color = "tomato", linetype = "dashed", cex = 1, alpha = 0.5) +
+    labs(title=' ', x="Estimators of Linear Model (95% CI)", y='PEEP') +
+    theme_bw() +
+    theme(legend.position = 'none',
+          plot.title = element_text(hjust = 0.5, size=12),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          axis.text.y = element_text(size = 12, colour = "black"),
+          axis.text.x.bottom = element_text(size = 12, colour = "black"),
+          axis.title.x = element_text(size = 12, colour = "black")) +
+    theme_bw() + guides(color = FALSE)
+    scale_x_continuous(trans='log10') #+ geom_text(aes(label = pvalor))
+  
+  # Grafico em branco
+  table_base = ggplot(estimadores, aes(y=Variable)) +
+    labs(y=NULL) + 
+    theme_bw() +
+    theme(legend.position = 'none',
+          plot.title = element_text(hjust = 0.5, size=12), 
+          axis.text.x = element_text(color="white", hjust = -3, size = 25), 
+          ## This is used to help with alignment
+          axis.line = element_blank(),
+          axis.text.y = element_blank(), 
+          axis.ticks = element_blank(),
+          axis.title.y = element_blank(), 
+          panel.background = element_blank(), 
+          panel.border = element_blank(), 
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(), 
+          plot.background = element_blank())
+  
+  # Legenda 1
+  tab1 = table_base +
+    geom_text(aes(x = 1, label = p_value, fontface = "bold"), 
+              size = 4, position = position_dodge(width = 0.5)) + #, color = momento
+    labs(title="P-valor", x=NULL)
+  
+  # Legenda 2
+  tab2 = table_base + 
+    labs(title = "space") +
+    geom_text(aes(x = 1, label = estimador, fontface = "bold"), 
+              size = 4, position = position_dodge(width = 0.5)) + #, color = momento
+    labs(title="Estimator", x=NULL)
+  
+  # lay =  matrix(c(1,1,1,1,1,1,1,1,1,2,3,3), nrow = 1)
+  # grid = grid.arrange(plot1, tab1, tab2, layout_matrix = lay)
+  # return(grid)
+  return(plot1) # apenas o grafico
+}
+
+for (linha in sample(c(100:nrow(tabelona)), 10) ){
+  fore_plot(df, 'desfecho_num', tabelona$Combinacao[linha]) %>% print()
+}
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
