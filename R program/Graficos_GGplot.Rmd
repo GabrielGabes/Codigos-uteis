@@ -1,15 +1,17 @@
 ```{r df ficticio}
-#source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
+##source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
+##source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
 #dff
 ```
 
 ```{r Pacotes de graficos}
-library(ggplot2) # graficos
-library(ggthemes) # temas ggplot
-library(scales) # escalas dos eixos
-library(patchwork) # graficos lado a lado => (graf1 + graf2)/graf3
-library(gridExtra) # graficos lado a lado 2 => grid.arrange(p1, p2, ncol=2)
-
+pacman::p_load(
+  ggplot2, # graficos
+  ggthemes, # temas ggplot
+  scales, # escalas dos eixos
+  patchwork, # graficos lado a lado => (graf1 + graf2)/graf3
+  gridExtra # graficos lado a lado 2 => grid.arrange(p1, p2, ncol=2)
+)
 # library(ggpubr) #ggplot (+estatistica) facilitado
 # library(ggsignif) #significancia entre grupos
 ```
@@ -308,11 +310,12 @@ teste_normalidade(dff, 'var_num', cor_esc = 6)
 ```{r Grafico de diagnostico de modelos lineares}
 
 #para lidar com objetos lmerMod.
-library(broom)
-library(broom.mixed)
-
+pacman::p_load(
+  broom,
+  broom.mixed,
+  lmtest
+)
 # https://library.virginia.edu/data/articles/diagnostic-plots
-library(lmtest)
 
 # Função para calcular resíduos padronizados
 calc_std_resid <- function(modelo, model_diag) {

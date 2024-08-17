@@ -62,12 +62,12 @@ pacman::p_load(
 
 ## Criando dataframe ficticio para testes
 # source("~/Codigos úteis/Gerador de Dados Ficticios/dataframe.R", echo=F)
-#source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
-pacman::p_load(readxl)
-url <- "https://rawgithubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerador%20de%20Dados%20Ficticios/df_ficticio.xlsx"
-temp_file <- tempfile(fileext = ".xlsx")
-download.file(url, destfile = temp_file, mode = "wb")
-dff <- read_excel(temp_file)
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
+# pacman::p_load(readxl)
+# url <- "https://rawgithubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerador%20de%20Dados%20Ficticios/df_ficticio.xlsx"
+# temp_file <- tempfile(fileext = ".xlsx")
+# download.file(url, destfile = temp_file, mode = "wb")
+# dff <- read_excel(temp_file)
 
 
 
@@ -76,7 +76,6 @@ dff <- read_excel(temp_file)
 pacman::p_load(knitr)
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Graficos_GGplot.Rmd")
-# Carrega os pacotes necessários
 url <- "https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Graficos_GGplot.Rmd"
 temp_file <- tempfile(fileext = ".Rmd")
 download.file(url, destfile = temp_file, mode = "wb")
@@ -103,4 +102,4 @@ pacman::p_load(
 
 
 
-'AMBIENTE PRONTO PARA TRABALHOO'
+'AMBIENTE PRONTO PARA TRABALHO'
