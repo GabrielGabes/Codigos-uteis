@@ -76,10 +76,7 @@ source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20pr
 pacman::p_load(knitr)
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Graficos_GGplot.Rmd")
-url <- "https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Graficos_GGplot.Rmd"
-temp_file <- tempfile(fileext = ".Rmd")
-download.file(url, destfile = temp_file, mode = "wb")
-knit(temp_file)
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Graficos_GGplot.R')
 
 
 
