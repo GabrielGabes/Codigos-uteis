@@ -236,11 +236,7 @@ densidade_grafi(dff, 'var_num')
 
 densidade_grafi = function(df, col_num, col_cat){
   
-  if (normalidade_por_grupo_criterio(df, col_num, col_cat) == TRUE){
-    medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(medida = mean(!!sym(col_num)))
-  } else {
-    medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(medida = median(!!sym(col_num)))
-  }
+  medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(medida = mean(!!sym(col_num)))
   
   ggplot(df, aes(x=!!sym(col_num), fill=as.factor(!!sym(col_cat)))) +
     geom_density(position='identity', alpha =0.5)+
@@ -257,6 +253,21 @@ densidade_grafi(dff, 'momento_3', 'desfecho') + facet_grid(~desfecho)
 densidade_grafi(dff, 'momento_3', 'tratamentos') + facet_grid(~tratamentos)
 ```
 
+```{r}
+retorne_p_ajust = function(valor){
+  if (valor == "< 0.001"){
+    "P-Value < 0.001"
+  }
+  else{
+    paste("P-Value =", valor)
+  }
+}
+
+retorne_p_ajust(pval_string(0.00002))
+retorne_p_ajust(pval_string(0.399949))
+retorne_p_ajust(pval_string(0.04))
+```
+
 
 ```{r Densidade, Teste de Normalidade}
 
@@ -265,10 +276,10 @@ teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T
   desvpad = sd(df[[coluna]], na.rm=T)
   
   if (nrow(df) > 3 & nrow(df) < 5000){
-    p_valor = shapiro.test(df[[coluna]])$p.value %>% retorne_p() %>% retorne_p_ajust()
+    p_valor = shapiro.test(df[[coluna]])$p.value %>% pval_string() %>% retorne_p_ajust()
     subtitulo = paste(p_valor, '(Shapiro-wilk)')
   } else {
-    p_valor = ks.test(df[[coluna]], "pnorm", mean=media, sd=desvpad)$p.value %>% retorne_p() %>% retorne_p_ajust()
+    p_valor = ks.test(df[[coluna]], "pnorm", mean=media, sd=desvpad)$p.value %>% pval_string() %>% retorne_p_ajust()
     subtitulo = paste(p_valor, '(Kolmogorov-Smirnov)')
   }
   
@@ -352,7 +363,7 @@ lm_diagnostic <- function(modelo) {
   
   # Gráfico 2: Normal Q-Q - Normalidade dos Resíduos
   ## teste de hipotese: Normalidade (Shapiro Wilk):
-  p_valor_Shapiro = shapiro.test(model_diag$.std.resid)$p.value %>% retorne_p() %>% retorne_p_ajust()
+  p_valor_Shapiro = shapiro.test(model_diag$.std.resid)$p.value %>% pval_string() %>% retorne_p_ajust()
   
   p2 <- ggplot(model_diag, aes(sample = .std.resid)) +
     stat_qq(shape=21, size=2) + 
@@ -364,7 +375,7 @@ lm_diagnostic <- function(modelo) {
   
   # Gráfico 3: Scale-Location - Homocedasticidade dos Residuos
   ## teste de hipotese: Homocedasticidade (Breusch-Pagan):
-  p_valor_Breusch = lmtest::bptest(modelo_lm)$p.value %>% retorne_p() %>% retorne_p_ajust()
+  p_valor_Breusch = lmtest::bptest(modelo_lm)$p.value %>% pval_string() %>% retorne_p_ajust()
   p3 <- ggplot(model_diag, aes(.fitted, sqrt(abs(.std.resid)))) +
     geom_point(shape=21, size=2, alpha=0.5) +
     geom_smooth(se = FALSE, color = "red") +
