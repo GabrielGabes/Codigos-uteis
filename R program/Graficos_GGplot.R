@@ -310,8 +310,8 @@ teste_normalidade(dff, 'var_num', cor_esc = 6)
 pacman::p_load(
   broom,
   broom.mixed,
-  lmtest,
-  lmerTest
+  lmerTest,
+  lmtest
 )
 # https://library.virginia.edu/data/articles/diagnostic-plots
 
