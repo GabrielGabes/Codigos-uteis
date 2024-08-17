@@ -62,7 +62,7 @@ pacman::p_load(
 
 ## Criando dataframe ficticio para testes
 # source("~/Codigos úteis/Gerador de Dados Ficticios/dataframe.R", echo=F)
-source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerador%20de%20Dados%20Ficticios/dataframe.R')
 # pacman::p_load(readxl)
 # url <- "https://rawgithubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerador%20de%20Dados%20Ficticios/df_ficticio.xlsx"
 # temp_file <- tempfile(fileext = ".xlsx")
