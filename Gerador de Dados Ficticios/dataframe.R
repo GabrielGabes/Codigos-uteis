@@ -235,7 +235,6 @@ df_ficticio = function(tamanho_amostra = 100){
 }
 
 dff = df_ficticio(200)
-dff
 
-#library(openxlsx)
-#openxlsx::write.xlsx(dff, 'df_ficticio.xlsx')
+##library(openxlsx)
+##openxlsx::write.xlsx(dff, 'df_ficticio.xlsx')

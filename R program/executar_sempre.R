@@ -5,9 +5,17 @@ source("https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20pr
 
 
 
+
+#### Suprimir todos os warnings no script ####
+options(warn = -1)
+
+
+
+
 #### Facilitador de carregamento de pacotes ####
 if(!require(pacman)) install.packages("pacman")
 library(pacman)
+
 
 
 
@@ -29,14 +37,16 @@ tidyr
 )
 # Carregando meu pacote
 tryCatch({
-  if(!require(pak)) install.packages("pak")
-  pak::pak("GabrielGabes/statgsa")
-  library(statgsa)
-}, error = function(e) {
   if(!require(remotes)) install.packages("remotes")
   remotes::install_github("GabrielGabes/statgsa")
-  library(statgsa)
+  suppressWarnings(library(statgsa))
+}, error = function(e) {
+  if(!require(pak)) install.packages("pak")
+  pak::pak("GabrielGabes/statgsa")
+  suppressWarnings(library(statgsa))
 })
+
+
 
 
 #### Outros Pacotes ####
@@ -52,8 +62,12 @@ devtools #criar e baixar pacotes de outros usuarios
 
 ## Criando dataframe ficticio para testes
 # source("~/Codigos úteis/Gerador de Dados Ficticios/dataframe.R", echo=F)
-source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
-
+#source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
+pacman::p_load(readxl)
+url <- "https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerador%20de%20Dados%20Ficticios/df_ficticio.xlsx"
+temp_file <- tempfile(fileext = ".xlsx")
+download.file(url, destfile = temp_file, mode = "wb")
+dff <- read_excel(temp_file)
 
 
 
@@ -62,11 +76,16 @@ source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20pr
 pacman::p_load(knitr)
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Graficos_GGplot.Rmd")
-source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Graficos_GGplot.Rmd')
+# Carrega os pacotes necessários
+url <- "https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Graficos_GGplot.Rmd"
+temp_file <- tempfile(fileext = ".Rmd")
+download.file(url, destfile = temp_file, mode = "wb")
+knit(temp_file)
+
+
+
 
 #### BIBLIOTECAS SEMPRE USADAS ####
-
-# PACOTES SEMPRE SEMPRE USADOS
 pacman::p_load(
 readxl, #Importar arquvios excel ==> read_excel(".xlsx)
 skimr, #resumo dos dados do dataframe => skim(df)
@@ -80,3 +99,8 @@ forcats, #manipulação de factor
 naniar, #analise de dados ausentes
 DescTools #canivete suiço
 )
+
+
+
+
+'AMBIENTE PRONTO PARA TRABALHO'
