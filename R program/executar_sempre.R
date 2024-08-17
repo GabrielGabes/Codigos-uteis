@@ -1,6 +1,5 @@
 #### cleaning desktop ####
 # source("~/Codigos úteis/R program/Limpeza_area_de_trabalho.R", echo=F)
-# URL do arquivo de código no GitHub # Baixar e executar o código diretamente do GitHub
 source("https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Limpeza_area_de_trabalho.R")
 
 
