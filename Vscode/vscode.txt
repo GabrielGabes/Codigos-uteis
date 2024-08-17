@@ -1,0 +1,18 @@
+######################################################
+Instalar pacote
+
+Digite no CMD:
+py -m pip install pacote
+
+Versão do python instalada
+python --version
+
+######################################################
+Quando estiver dando problema para reconhecer biblioteca ja instalada
+
+Aqui estão os passos para definir o interpretador Python no VSCode:
+
+1 - Abra a Paleta de Comandos: Ctrl+Shift+P
+
+2 - Digite e Selecione:
+Python: Select Interpreter

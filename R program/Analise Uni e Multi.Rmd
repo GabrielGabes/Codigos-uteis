@@ -1,77 +1,35 @@
 ```{r df ficticio}
-source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
+source("~/Codigos úteis/Gerador de Dados Ficticios/dataframe.R", echo=F)
 df
+df = df[c('desfecho','desfecho_num','idade','idade_media','altura','alto_media','peso','imc','obeso','momento_1','momento_2','momento_3',
+          'genero','tabagismo','doenca_cardiaca')]
+df
+```
+
+```{r Analise geral}
+tabelona = cont(df, names(df)[1]) %>% tabelinha_ajust()
+tabelona = tabelona[FALSE, ]
+for (coluna in names(df)){
+  classe = class(df[[coluna]])[1]
+  print(coluna)
+  if (classe == "numeric"){
+    tabelinha = summary_numerico_n_parametrico(df, coluna) %>% tabelinha_ajust()
+  } else {
+    tabelinha = cont(df, coluna) %>% tabelinha_ajust()
+  }
+  tabelona = rbind(tabelona, tabelinha)
+}
+
+tabelona %>% capture()
 ```
 
 
 ```{r Tabelas e teste de hipotese}
-
-coluna_analisada = 'desfecho'
-lista_coluna = names(df)[which(!(names(df) %in% c(coluna_analisada)))] 
-tabelona = summary_numerico_por_grupo_n_parametrico(df, "idade", coluna_analisada)[FALSE, ]
-
-for (coluna in lista_coluna){
-  classe = class(df[[coluna]])[1]
-  
-  if (classe == "numeric"){
-    if (normalidade_por_grupo_criterio(df, coluna, coluna_analisada) == TRUE){
-      tabelinha = summary_numerico_por_grupo_parametrico(df, coluna, coluna_analisada)
-    } 
-    else {
-      tabelinha = summary_numerico_por_grupo_n_parametrico(df, coluna, coluna_analisada)
-    }
-  } 
-  else if (classe == 'character' | classe == 'factor'){
-    tabelinha = conti(df, coluna_analisada, coluna, "col")
-  }
-  tabelona = rbind(tabelona, tabelinha)
-}
-
-colnames(tabelona)[colnames(tabelona) == "Overall"] = paste0("Overall 100% (n=", nrow(df[complete.cases(df[[coluna_analisada]]), ]), ")")
-niveis = levels(as.factor(df[[coluna_analisada]]))
-for (i in 1:length(niveis)){
-  nivel = niveis[i]
-  
-  table_d = table( df[[coluna_analisada]] )
-  prob_table = prop.table( table_d ) %>% round(4) * 100
-  
-  colnames(tabelona)[colnames(tabelona) == nivel] = paste0(nivel, ' ', prob_table[i], "% (n=", table_d[i], ")")
-}
-
-tabelona %>% capture()
-
+cross_table(df, 'desfecho')
 ```
 
 ```{r Analise Univariada}
-tabelona = analise_mod(glm(df[[coluna_analisada]]~df[['idade']], family='binomial'))
-
-tabelona$indice = NA
-tabelona = tabelona[, c("indice", setdiff(names(tabelona), "indice"))]
-tabelona = tabelona[FALSE, ]
-
-for (coluna in lista_coluna){
-  tabelinha = analise_mod(glm(df[[coluna_analisada]]~df[[coluna]], family='binomial'))
-  
-  tabelinha$indice = row.names(tabelinha)
-  tabelinha = tabelinha[, c("indice", setdiff(names(tabelinha), "indice"))]
-  
-  row.names(tabelinha) = 1:nrow(tabelinha)
-  
-  if (class(df[[coluna]]) != "numeric"){
-    tabelinha = rbind(NA,NA, tabelinha) #adicionando linha
-    tabelinha[["indice"]] = c(coluna,levels(as.factor(df[[coluna]])))
-  }
-  else{
-    tabelinha[["indice"]] = coluna
-  }
-  tabelona = rbind(tabelona, tabelinha)
-}
-tabelona$`Pr(>|z|)` = sapply(tabelona$`Pr(>|z|)`, function(x) ifelse(is.na(x), NA, retorne_p(x)))
-tabelona$OR = paste0( tabelona$OR, ' (', tabelona$`2.5 %`, ' - ', tabelona$`97.5 %`, ')' )
-tabelona$OR[tabelona$OR == 'NA (NA - NA)'] = NA
-tabelona$`2.5 %` = NULL
-tabelona$`97.5 %` = NULL
-tabelona %>% capture()
+cross_table_glm(df, 'desfecho')
 ```
 
 # Analise Multi Variada
@@ -106,6 +64,7 @@ library(e1071)
 library(car) #VIF
 ```
 
+
 ```{r Grade com combinações de variaveis_listas}
 # Variaveis
 lista_idade = c('idade','idade_media')
@@ -124,6 +83,11 @@ colunas = names(df)
 variaveis_independentes = colunas[!colunas %in% c('desfecho','desfecho_num' , lista_idade, lista_altura, lista_peso, lista_momento)]
 variaveis_independentes
 ```
+
+```{r}
+names(df) 
+```
+
 
 ```{r Aplicando Algoritmo de combinações}
 # Criando todas combinações
@@ -144,7 +108,8 @@ novas_colunas = data.frame(
   Acuracia = rep(NA, num_linhas), Precisao = rep(NA, num_linhas), Especificidade = rep(NA, num_linhas), 
   AUC_ROC = rep(NA, num_linhas), 
   Pseudo_R2_McFadden = rep(NA, num_linhas), Pseudo_R2_Nagelkerke = rep(NA, num_linhas), 
-  AIC = rep(NA, num_linhas), BIC = rep(NA, num_linhas), VIF = rep(NA, num_linhas),
+  AIC = rep(NA, num_linhas), BIC = rep(NA, num_linhas), 
+  VIF = rep(NA, num_linhas),
   controle = rep(NA, num_linhas),
   stringsAsFactors = FALSE
 )
@@ -155,75 +120,37 @@ tabelona
 ESTA SEMPRE ATENTO NA VARIAVEL DESFECHO
 - sempre deve ser binaria com valores 0 ou 1
 
-```{r Função criação e avaliação de modelos}
-calcular_metricas = function(data_df, variavel_dependente, vars_independentes){
-  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
-  formula_do_modelo = as.formula(formula_texto) 
-  vars_independentes_lista = unlist(strsplit(vars_independentes, split = "\\+"))
-  
-  tryCatch({
-    # Modelo
-    modelo = glm(formula=formula_do_modelo, family = binomial(), data = data_df)
-    #, weights = ps_ipw$weights)
-    
-    # Previsões e dados reais
-    df_clean = data_df[complete.cases(data_df[, c(variavel_dependente, vars_independentes_lista)]), ]
-    previsoes = predict(modelo, newdata = df_clean, type = "response")
-    
-    # Caso seja o modelo seja glm
-    previsoes_bin = ifelse(previsoes > 0.5, 1, 0)
-    dados_reais = df_clean[[variavel_dependente]]
-    
-    # Calcular métricas
-    matrix = confusionMatrix(as.factor(previsoes_bin), as.factor(dados_reais), positive = "1")
-    acuracia = matrix$overall['Accuracy']
-    sensibilidade = matrix$byClass['Sensitivity']  # Precisão é 'Pos Pred Value'
-    especificidade = matrix$byClass['Specificity']
-    auc = roc(dados_reais, previsoes)$auc
-    
-    # Pseudo R de Mc Fadden
-    pseudo_r2_McFadden = 1 - (modelo$deviance / modelo$null.deviance)
-    # Pseudo R de Nagelkerke
-    pseudo_r2_Nagelkerke = PseudoR2(modelo, which = "Nagelkerke")
-    
-    # Critério de informação de (AKAIKE/BAYESIANO)
-    aic = AIC(modelo)
-    bic = BIC(modelo)
-    
-    # VIF (Variance inflation factor) - Multicoliaridade
-    if (length(vars_independentes_lista) > 1) {
-      VIF = any(vif(modelo) > 10) %>% as.numeric()
-    } else {
-      VIF = 0
-    }
-    
-    # Extração dos valores de TP, TN, FP, FN
-    tp = matrix$table[2, 2]
-    tn = matrix$table[1, 1]
-    fp = matrix$table[1, 2]
-    fn = matrix$table[2, 1]
-    
-    return(c(tp, tn, fp, fn, 
-             acuracia, sensibilidade, especificidade, 
-             auc, 
-             pseudo_r2_McFadden, pseudo_r2_Nagelkerke, 
-             aic, bic, VIF,
-             'ok'))
-  }, error = function(e) {
-    print(paste0('erro com o modelo: ', formula_texto))
-    
-    return(c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 'erro'))
-  })
-}
-calcular_metricas(df, 'desfecho', tabelona$Combinacao[10])
+```{r}
+variavel_dependente = 'desfecho'
+linha = 10
+vars_independentes = tabelona$Combinacao[linha]
+
+formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+formula_do_modelo = as.formula(formula_texto)
+
+# Modelo
+modelo = glm(formula=formula_do_modelo, family = binomial(), data = df) #, weights = ps_ipw$weights)
+metricas_de_avaliacao_glm( df, modelo, variavel_dependente, tabelona$Combinacao[linha] )
+
 ```
 
+
 ```{r Aplicando algorimo de grade}
+variavel_dependente = 'desfecho'
+
 for (linha in 1:nrow(tabelona)){
   controle = tabelona$controle[linha]
   if (controle == 'erro' | is.na(controle)){
+    
+    vars_independentes = tabelona$Combinacao[linha]
+    formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+    formula_do_modelo = as.formula(formula_texto)
+    
+    # Modelo
+    modelo = glm(formula=formula_do_modelo, family = binomial(), data = df) #, weights = ps_ipw$weights)
+    
     tabelona[linha,] = c(tabelona$Combinacao[linha], 
-                         calcular_metricas(df, variavel_dependente, tabelona$Combinacao[linha]) )
+                         metricas_de_avaliacao_glm( df, modelo, variavel_dependente, tabelona$Combinacao[linha] ) )
   } 
 }
 
@@ -279,6 +206,7 @@ variaveis_independentes = colunas[!colunas %in% c('desfecho','desfecho_num' , li
 variaveis_independentes
 ```
 
+
 ```{r Aplicando Algoritmo de combinações}
 # Criando todas combinações
 variaveis_independentes = sort(variaveis_independentes)
@@ -305,86 +233,37 @@ tabelona = cbind(tabelona, novas_colunas)
 tabelona
 ```
 
-```{r Função criação e avaliação de modelos}
-calcular_metricas = function(data_df, variavel_dependente, vars_independentes){
-  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
-  formula_do_modelo = as.formula(formula_texto)
-  vars_independentes_lista = unlist(strsplit(vars_independentes, split = "\\+"))
-  
-  tryCatch({
-    # Modelo
-    modelo = lm(formula=formula_do_modelo, data = data_df)
-    # Previsões do modelo
-    predictions = predict(modelo)
-    
-    # MAE - Mean Absolute Error
-    MAE = mean(abs(data_df[[variavel_dependente]] - predictions))
-    
-    # MSE - Mean Squared Error
-    MSE = mean((data_df[[variavel_dependente]] - predictions)^2)
-    
-    # RMSE - Root Mean Squared Error
-    RMSE = sqrt(MSE)
-    
-    # MAPE - Mean Absolute Percentage Error
-    MAPE = mean(abs((data_df[[variavel_dependente]] - predictions) / data_df[[variavel_dependente]])) * 100
 
-    # Summary do modelo
-    summary_LM = modelo %>% summary()
-    
-    # R-quadrado (R²)
-    r_squared <- summary_LM$r.squared
-    
-    # R-quadrado ajustado
-    r_squared_adj <- summary_LM$adj.r.squared
-    
-    # Critério de informação de (AKAIKE/BAYESIANO)
-    aic = AIC(modelo)
-    bic = BIC(modelo)
-    
-    # VIF (Variance inflation factor) - Multicoliaridade
-    if (length(vars) > 1){
-      VIF = any(vif(modelo) > 10) %>% as.numeric()
-    } else{ 
-      VIF = 0
-    }
-    
-    # Caso for apenas uma var dependente e numérica
-    if (length(vars_independentes_lista) == 1){
-      var_independente = vars_independentes_lista[1]
-      # Verificando se ela é numerica
-      if (data_df[var_independente] %>% class() == 'numeric'){
-        # Analise Univariada Correlação
-        pearson_teste = cor.test(x=data_df[[var_independente]], 
-                                 y=data_df[[variavel_dependente]], 
-                                 method = 'pearson')
-        pearson_estimate = pearson_teste$estimate
-        pearson_P = pearson_teste$p.value %>% retorne_p()
-        # Correlação de Spearman
-        spearman_teste = cor.test(x=data_df[[var_independente]], 
-                                  y=data_df[[variavel_dependente]], 
-                                  method = 'spearman')
-        spearman_estimate = spearman_teste$estimate
-        spearman_P = spearman_teste$p.value %>% retorne_p()
-      }
-    }
-    
-    return(c(MAE, MSE, RMSE, MAPE, r_squared, r_squared_adj, aic, bic, VIF, 'OK'))
-    }, error = function(e) {
-      print(paste0('erro com o modelo: ', formula_texto))
-      
-      return(c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 'erro'))
-  })
-}
-calcular_metricas(df, 'desfecho_num', tabelona$Combinacao[10])
+```{r}
+variavel_dependente = 'desfecho_num'
+linha = 10
+vars_independentes = tabelona$Combinacao[linha]
+
+formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+formula_do_modelo = as.formula(formula_texto)
+
+# Modelo
+modelo = lm(formula=formula_do_modelo, data = df)
+metricas_de_avaliacao_regressao( df, modelo, variavel_dependente, tabelona$Combinacao[linha] )
 ```
 
+
 ```{r Aplicando algorimo de grade}
+variavel_dependente = 'desfecho_num'
+
 for (linha in 1:nrow(tabelona)){
   controle = tabelona$controle[linha]
   if (controle == 'erro' | is.na(controle)){
+    
+    vars_independentes = tabelona$Combinacao[linha]
+    formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+    formula_do_modelo = as.formula(formula_texto)
+    
+    # Modelo
+    modelo = lm(formula=formula_do_modelo, data = df)
+    
     tabelona[linha,] = c(tabelona$Combinacao[linha], 
-                         calcular_metricas(df, 'desfecho_num', tabelona$Combinacao[linha]) )
+                         metricas_de_avaliacao_regressao( df, modelo, variavel_dependente, tabelona$Combinacao[linha] ) )
   }
 }
 # Ultimos ajustes
@@ -507,28 +386,233 @@ for (linha in sample(c(100:nrow(tabelona)), 10) ){
 
 ```
 
+# Modelos Stepwise
 
-```{r}
+## Tipos de modelos
+1. Forward Selection (Seleção Progressiva)
+Começa com um modelo sem variáveis (modelo nulo).
+Adiciona a variável que mais melhora o ajuste do modelo, conforme determinado por um critério de seleção (como AIC, BIC, ou valor p).
+Repetidamente adiciona variáveis, uma de cada vez, até que nenhuma variável adicional melhore significativamente o modelo.
+
+2. Backward Elimination (Eliminação Regressiva)
+Começa com um modelo que inclui todas as variáveis preditoras.
+Remove a variável que menos contribui para o modelo, conforme determinado por um critério de seleção.
+Repetidamente remove variáveis, uma de cada vez, até que todas as variáveis restantes contribuam significativamente para o modelo.
+
+3. Stepwise Regression (Regressão por Etapas)
+Combina os métodos de seleção progressiva e eliminação regressiva.
+Começa com um modelo vazio (forward stepwise) ou com todas as variáveis (backward stepwise).
+Em cada etapa, uma variável pode ser adicionada ou removida, dependendo de qual ação melhora mais o modelo segundo o critério de seleção.
+Continua até que nenhuma adição ou remoção de variável melhore significativamente o modelo.
+
+## Critérios de Seleção:
+1. AIC (Akaike Information Criterion): Penaliza a complexidade do modelo para evitar overfitting.
+
+2. BIC (Bayesian Information Criterion): Semelhante ao AIC, mas penaliza modelos complexos mais severamente.
+
+3. Valor p: Utilizado em testes de hipóteses para determinar a significância estatística das variáveis.
+
+```{r Definindo Modelo Completo}
+variavel_dependente = 'desfecho_num'
+
+# Ajustar um modelo inicial com todas as variáveis
+modelo_completo <- lm(desfecho_num ~ alto_media+doenca_cardiaca+genero+idade_media+momento_3+obeso+tabagismo, data = df)
+
+metricas_de_avaliacao_regressao( df, modelo_completo, variavel_dependente)
+
+modelo_completo$coefficients
+```
+
+
+```{r AIC}
+
+# Aplicar a regressão stepwise (AIC) - backward elimination
+modelo_stepwise_AIC_backward <- step(modelo_completo, direction = "backward")
+#summary(modelo_stepwise_AIC_backward)
+
+# Aplicar a regressão stepwise (AIC) - forward selection
+modelo_nulo <- lm(desfecho_num ~ 1, data = df)
+modelo_stepwise_AIC_forward <- step(modelo_nulo, direction = "forward", scope = formula(modelo_completo))
+#summary(modelo_stepwise_AIC_forward)
+
+# Aplicar a regressão stepwise (AIC) - stepwise
+modelo_stepwise_AIC_both <- step(modelo_completo, direction = "both")
+#summary(modelo_stepwise_AIC_both)
+
+metricas_de_avaliacao_regressao( df, modelo_stepwise_AIC_backward, variavel_dependente )
+metricas_de_avaliacao_regressao( df, modelo_stepwise_AIC_forward, variavel_dependente )
+metricas_de_avaliacao_regressao( df, modelo_stepwise_AIC_both, variavel_dependente )
+
+modelo_stepwise_AIC_backward$coefficients
+modelo_stepwise_AIC_forward$coefficients
+modelo_stepwise_AIC_both$coefficients
+
+```
+
+
+```{r BIC}
+
+# Número de observações
+n <- nrow(df)
+
+# Aplicar a regressão stepwise (BIC) - backward elimination
+modelo_stepwise_BIC_backward <- stepAIC(modelo_completo, direction = "backward", k = log(n))
+summary(modelo_stepwise_BIC_backward)
+
+# Aplicar a regressão stepwise (BIC) - forward selection
+modelo_nulo <- lm(desfecho_num ~ 1, data = df)
+modelo_stepwise_BIC_forward <- stepAIC(modelo_nulo, direction = "forward", scope = list(lower = formula(modelo_nulo), upper = formula(modelo_completo)), k = log(n))
+summary(modelo_stepwise_BIC_forward)
+
+# Aplicar a regressão stepwise (BIC) - stepwise
+modelo_stepwise_BIC_both <- stepAIC(modelo_completo, direction = "both", k = log(n))
+summary(modelo_stepwise_BIC_both)
+
+metricas_de_avaliacao_regressao( df, modelo_stepwise_BIC_backward, variavel_dependente )
+metricas_de_avaliacao_regressao( df, modelo_stepwise_BIC_forward, variavel_dependente )
+metricas_de_avaliacao_regressao( df, modelo_stepwise_BIC_both, variavel_dependente )
+
+modelo_stepwise_BIC_backward$coefficients
+modelo_stepwise_BIC_forward$coefficients
+modelo_stepwise_BIC_both$coefficients
+
+```
+
+
+```{r P-valor - Incompleto}
+
+# Critério de seleção teste F
+
+step(modelo_completo, direction = "backward", test = "F")
+
+#### Função chatgpt # virou um loop infinito
+
+# # Função para backward elimination baseada em valor p
+# backward_elimination_p <- function(modelo, limiar = 0.05) {
+#   while(TRUE) {
+#     p_valores <- summary(modelo)$coefficients[,4]
+#     p_valor_max <- max(p_valores[-1])
+#     if(p_valor_max < limiar) break
+#     variavel_remover <- names(p_valores)[which.max(p_valores[-1])+1]
+#     formula_atual <- as.formula(paste(". ~ . -", variavel_remover))
+#     modelo <- update(modelo, formula_atual)
+#   }
+#   return(modelo)
+# }
+# 
+# # Aplicar a regressão stepwise (valor p) - backward elimination
+# modelo_stepwise_p <- backward_elimination_p(modelo_completo)
+# 
+# # Sumário do modelo final
+# summary(modelo_stepwise_p)
+
+#### Função própria
+
+# Function has.interaction checks whether x is part of a term in terms
+# terms is a vector with names of terms from a model
+has.interaction <- function(x,terms){
+    out <- sapply(terms, function(i){
+        sum(1-(strsplit(x,":")[[1]] %in% strsplit(i,":")[[1]]))==0
+    })
+    return(sum(out)>0)
+}
+
+# Function Model.select
+# model is the lm object of the full model
+# keep is a list of model terms to keep in the model at all times
+# sig gives the significance for removal of a variable. Can be 0.1 too (see SPSS)
+# verbose=T gives the F-tests, dropped var and resulting model after 
+model.select <- function(model,keep,sig=0.05,verbose=F){
+      counter=1
+      # check input
+      if(!is(model,"lm")) stop(paste(deparse(substitute(model)),"is not an lm object\n"))
+      # calculate scope for drop1 function
+      terms <- attr(model$terms,"term.labels")
+      if(missing(keep)){ # set scopevars to all terms
+          scopevars <- terms
+      } else{            # select the scopevars if keep is used
+          index <- match(keep,terms)
+          # check if all is specified correctly
+          if(sum(is.na(index))>0){
+              novar <- keep[is.na(index)]
+              warning(paste(
+                  c(novar,"cannot be found in the model",
+                  "\nThese terms are ignored in the model selection."),
+                  collapse=" "))
+              index <- as.vector(na.omit(index))
+          }
+          scopevars <- terms[-index]
+      }
+
+      # Backward model selection : 
+
+      while(T){
+          # extract the test statistics from drop.
+          test <- drop1(model, scope=scopevars,test="F")
+
+          if(verbose){
+              cat("-------------STEP ",counter,"-------------\n",
+              "The drop statistics : \n")
+              print(test)
+          }
+
+          pval <- test[,dim(test)[2]]
+
+          names(pval) <- rownames(test)
+          pval <- sort(pval,decreasing=T)
+
+          if(sum(is.na(pval))>0) stop(paste("Model",
+              deparse(substitute(model)),"is invalid. Check if all coefficients are estimated."))
+
+          # check if all significant
+          if(pval[1]<sig) break # stops the loop if all remaining vars are sign.
+
+          # select var to drop
+          i=1
+          while(T){
+              dropvar <- names(pval)[i]
+              check.terms <- terms[-match(dropvar,terms)]
+              x <- has.interaction(dropvar,check.terms)
+              if(x){i=i+1;next} else {break}              
+          } # end while(T) drop var
+
+          if(pval[i]<sig) break # stops the loop if var to remove is significant
+
+          if(verbose){
+             cat("\n--------\nTerm dropped in step",counter,":",dropvar,"\n--------\n\n")              
+          }
+
+          #update terms, scopevars and model
+          scopevars <- scopevars[-match(dropvar,scopevars)]
+          terms <- terms[-match(dropvar,terms)]
+
+          formul <- as.formula(paste(".~.-",dropvar))
+          model <- update(model,formul)
+
+          if(length(scopevars)==0) {
+              warning("All variables are thrown out of the model.\n",
+              "No model could be specified.")
+              return()
+          }
+          counter=counter+1
+      } # end while(T) main loop
+      return(model)
+}
+
+model.select(modelo_completo)
+
+##### Aplicação com pacote RMS
+
+require(rms)
+model1 <- ols(desfecho_num ~ alto_media+doenca_cardiaca+genero+idade_media+momento_3+obeso+tabagismo, data = df)
+model2 <- fastbw(fit=model1, rule="p", sls=0.05)
+model2
+
 ```
 
 
 ```{r}
-```
 
-
-```{r}
-```
-
-
-```{r}
-```
-
-
-```{r}
-```
-
-
-```{r}
 ```
 
 

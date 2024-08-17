@@ -1,0 +1,307 @@
+```{r Banco de dados ficticio}
+source("~/Codigos úteis/R program/df_ficticio.R", echo=F)
+df = dff
+```
+
+```{r Bibliotecas}
+library(lmerTest) # é melhor que library(lme4)
+
+library(MuMIn) # R quadrado para modelos mistos # 
+# R2m = proporção explica apenas pelas variaveis fixas 
+# R2c = proporção explica pelas variaveis fixas e aleatoria # R quadrado geral
+# r.squaredGLMM(modelo) #código de aplicação
+
+library(pander)
+# anova(modelo) %>% pander()
+# para avaliar a significancia geral dos preditores
+
+library(sjPlot)
+#criar tabelas e gráficos de resultados de modelos estatísticos de uma forma que é fácil de usar em relatórios e artigos científicos.
+
+# Gerar a tabela formatada com personalizações
+#tab_model(modelo, show.re.var = TRUE, show.icc = TRUE, digits = 3, title = "Resultados do Modelo Misto")
+
+# Gerar um gráfico dos efeitos aleatórios
+#plot_model(modelo, type = "re")
+
+# Gerar uma tabela de resumo descritivo
+#tab_summary(df)
+
+# Visualizar a estrutura do data frame
+#view_df(df)
+```
+
+
+```{r Modelo Linear Simples}
+modelo_lm <- lm(response ~ fixed_effects + group, data = df)
+
+# Primeira Avaliação
+modelo_lm %>% summary()
+modelo_lm %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo_lm %>% lm_diagnostic()
+
+# Coeficientes
+cbind(Estimate = coef(modelo_lm), confint(modelo_lm)) %>% round(2)
+
+# Previsões
+df$pred = modelo_lm %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo_lm %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Grafico de Previsão
+ggplot(df, aes(x = fixed_effects, y = response, color = group)) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  labs(title = "Modelo Linear Simples", x='x', y='y', color='groups')
+ggsave("Modelo Linear Simples.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+```{r Modelo com Interceptos Aleatórios}
+modelo <- lmer(response ~ fixed_effects + (1|group), data = df)
+
+# Metricas de Avaliação
+modelo %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo %>% lm_diagnostic()
+
+# Coeficientes
+summary(modelo)
+# fixef(modelo) # Coeficientes fixos
+coef(modelo) # Coeficientes
+#ranef(modelo) # Efeitos aleatórios
+confint(modelo) # Intervalos de confiança
+#anova(modelo) # ANOVA
+#VarCorr(modelo) # Matriz de variâncias e covariâncias dos efeitos aleatórios
+
+# Previsões
+df$pred = modelo %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Analise Grafica das previsões
+ggplot(df, aes(x = fixed_effects, y = response, color = group)) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  labs(title = "Modelo com Interceptos Aleatórios", x='x', y='y', color='groups')
+ggsave("Modelo com Interceptos Aleatórios.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+```{r Comparando Modelo LM com o Misto}
+# Diferença 
+t.test(predict(modelo_lm), predict(modelo), paired = T)
+t.test(residuals(modelo_lm), residuals(modelo), paired = T)
+
+(predict(modelo_lm) - predict(modelo)) %>% summary()
+
+plotar_boxplot_residuos(list(modelo_lm, modelo)) + labs(y = 'Residuos dos Modelos') + scale_x_discrete(labels = c('Linear','Misto'))
+```
+
+
+```{r Modelo com Interceptos e Inclinações Aleatórios}
+modelo <- lmer(response2 ~ fixed_effects + (1 + fixed_effects||group), data = df)
+
+# Metricas de Avaliação
+modelo %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo %>% lm_diagnostic()
+
+# Coeficientes
+summary(modelo)
+coef(modelo) # Coeficientes
+confint(modelo) # Intervalos de confiança
+
+# Previsões
+df$pred = modelo %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Analise Grafica das previsões
+ggplot(df, aes(x = fixed_effects, y = response2, color = group)) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  labs(title = "Modelo com Interceptos e Inclinações Aleatórios", x='x', y='y', color='groups')
+ggsave("Modelo com Interceptos e Inclinações Aleatórios.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+```{r Modelo com Inclinações Aleatórias}
+modelo <- lmer(response3 ~ fixed_effects + (0 + fixed_effects | group), data = df)
+
+# Metricas de Avaliação
+modelo %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo %>% lm_diagnostic()
+
+# Coeficientes
+summary(modelo)
+coef(modelo) # Coeficientes
+confint(modelo) # Intervalos de confiança
+
+# Previsões
+df$pred = modelo %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Analise Grafica das previsões
+ggplot(df, aes(x = fixed_effects, y = response3, color = group)) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  labs(title = "Modelo com Inclinações Aleatórias", x='x', y='y', color='groups')
+ggsave("Modelo com Inclinações Aleatórias.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+
+```{r Modelo Efeitos Cruzados}
+modelo <- lmer(response4 ~ fixed_effects + (1|group) + (1|group2), data = df)
+# aparentemente só funfa de verdade assim -->
+df$inter_ <- factor(interaction(df$group, df$group2))
+modelo_inter <- lmer(response4 ~ fixed_effects + (1|inter_), data = df)
+
+# Metricas de Avaliação
+modelo %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo %>% lm_diagnostic()
+
+# Coeficientes
+summary(modelo)
+coef(modelo) # Coeficientes
+confint(modelo) # Intervalos de confiança
+
+# Previsões
+df$pred = modelo %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Analise Grafica das previsões
+ggplot(df, aes(x = fixed_effects, y = response4, color=interaction(group2, group1))) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  facet_grid(group2~group) +
+  labs(title = "Modelo Efeitos Cruzados", x='x', y='y', color='groups')
+ggsave("Modelo Efeitos Cruzados.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+
+```{r Comparando modelo misto de efeito cruzado com efeito iteração}
+anova(modelo_inter, modelo)
+
+# Diferença 
+t.test(predict(modelo_inter), predict(modelo), paired = T)
+t.test(residuals(modelo_inter), residuals(modelo), paired = T)
+
+(predict(modelo_inter) - predict(modelo)) %>% summary()
+
+plotar_boxplot_residuos(list(modelo_inter, modelo)) + labs(y = 'Residuos dos Modelos') + scale_x_discrete(labels = c('Interação','Cruzado'))
+```
+
+
+```{r Modelo Efeitos Aleatorios Aninhados}
+modelo <- lmer(response5 ~ fixed_effects + (1|group/group1), data = df)
+
+# Metricas de Avaliação
+modelo %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo %>% lm_diagnostic()
+
+# Coeficientes
+summary(modelo)
+coef(modelo) # Coeficientes
+confint(modelo) # Intervalos de confiança
+
+# Previsões
+df$pred = modelo %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Analise Grafica das previsões
+df$inter_ <- factor(interaction(df$group, df$group1))
+ggplot(df, aes(x = fixed_effects, y = response5, color=interaction(group, group1))) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  facet_grid(~inter_) +
+  labs(title = "Modelo Efeitos Aleatórios Aninhados", x='x', y='y', color='groups')
+ggsave("Modelo Efeitos Aleatórios Aninhados.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+
+```{r Modelo Efeito Aleatórios Correlacionados}
+modelo <- lmer(response2 ~ fixed_effects + (1 + fixed_effects|group), data = df)
+
+# Metricas de Avaliação
+modelo %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+modelo %>% lm_diagnostic()
+
+# Coeficientes
+summary(modelo)
+coef(modelo) # Coeficientes
+confint(modelo) # Intervalos de confiança
+
+# Previsões
+df$pred = modelo %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Analise Grafica das previsões
+ggplot(df, aes(x = fixed_effects, y = response2, color = group)) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  labs(title = "Modelo Efeito Aleatórios Correlacionados", x='x', y='y', color='groups')
+ggsave("Modelo Efeito Aleatórios Correlacionados.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+
+```{r Comparando modelo correlacionado com modelo tudo aleatório}
+#Modelo com Interceptos e Inclinações Aleatórios
+modelo2 <- lmer(response2 ~ fixed_effects + (1 + fixed_effects||group), data = df)
+
+anova(modelo, modelo2)
+
+# Diferença 
+t.test(predict(modelo2), predict(modelo), paired = T)
+t.test(residuals(modelo2), residuals(modelo), paired = T)
+
+(predict(modelo2) - predict(modelo)) %>% summary()
+
+plotar_boxplot_residuos(list(modelo2, modelo)) + labs(y = 'Residuos dos Modelos') + scale_x_discrete(labels = c('Tudo Aleatório','Correlacionado'))
+```
+
+PREPARANDO TABELA
+
+```{r}
+# Gerar a tabela formatada com personalizações
+sjPlot::tab_model(modelo, modelo2, show.re.var = TRUE, show.icc = TRUE, digits = 3, title = "Resultados do Modelo Misto")
+
+# Gerar um gráfico dos efeitos aleatórios
+sjPlot::plot_model(modelo, type = "re")
+```
+
+
+```{r Avaliação do Modelo}
+## Independência dos resíduos (Durbin-Watson): PARA dados longituginais
+#durbinWatsonTest(modelo_lm)
+```
+
+
+```{r}
+```

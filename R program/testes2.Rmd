@@ -1,0 +1,110 @@
+```{r}
+x = c(
+  'Quality & Clinical Excellence',
+  'Policy & Measurement',
+  'Patient & Family Engagement',
+  'Staff & provider engagement',
+  'Infrastructure & acess',
+  'Governance and Leandership'
+)
+
+mean = c(
+  24.2,
+  23.88,
+  24.71,
+  21.94,
+  23.7,
+  25.02
+)
+
+sd = c(
+  3.65,
+  3.99,
+  3.56,
+  5.51,
+  4.06,
+  3.54
+)
+
+tabela = data.frame(x, mean, sd)
+tabela = tabela %>% mutate(ymin= mean - sd, ymax= mean + sd)
+tabela$texto = paste0(tabela$mean, ' (', tabela$sd, ')')
+tabela$x = factor(tabela$x, levels = rev(x))
+tabela
+
+ggplot(tabela, aes(x=x, y=mean, label=mean, fill=x)) + 
+  geom_col(show.legend=FALSE, color="black") + 
+  geom_errorbar(aes(ymin=ymin, ymax=ymax), width=0.3, position=position_dodge(0.75)) +
+  geom_text(aes(y=10, label = texto), vjust=0.5) + 
+  theme(legend.position = "bottom") +
+  scale_y_continuous(limits = c(0, 29), breaks=seq(from = 0, to = 30, by = 5)) +
+  labs(x=NULL, y='Mean (SD)', title=NULL) + coord_flip() +
+  scale_fill_brewer(palette = 'Blues')
+
+#ggsave("fig2.jpg", height=7, width=20, units="cm", dpi= 600)
+
+```
+
+
+```{r}
+
+aggregate(momento_1~tratamentos, data=df, summary) %>% t() %>% as.data.frame()
+
+aggregate(.~tratamentos, data=df, mean) 
+
+aggregate(cbind(momento_1,  momento_2)~desfecho, data=df, mean)
+df %>% group_by(tratamentos, desfecho) %>% summarise(n = n())
+
+```
+
+
+```{r}
+# Instalando e carregando o pacote multcompView, se necessário
+if (!requireNamespace("multcompView", quietly = TRUE)) {
+  install.packages("multcompView")
+}
+library(multcompView)
+
+# Exemplo de dados
+data <- data.frame(
+  group = factor(c("A", "A", "B", "B", "C", "C")),
+  value = c(10, 15, 10, 25, 20, 30)
+)
+
+# Realizando ANOVA
+anova_result <- aov(value ~ group, data = data)
+summary(anova_result)
+
+# Realizando comparações múltiplas usando o teste t de Student
+pairwise_comparisons <- pairwise.t.test(data$value, data$group, p.adjust.method = "bonferroni")
+print(pairwise_comparisons)
+
+# Gerando letras compactas para representar os resultados
+letters <- multcompLetters(pairwise_comparisons$p.value)
+print(letters)
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+
+library(available)
+available::available('GSAStat', browse = T)
+
+library(usethis)
+usethis::create_package('C:/Users/gabri/OneDrive/Documentos/GSAStat')
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

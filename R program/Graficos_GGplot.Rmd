@@ -1,69 +1,42 @@
 ```{r df ficticio}
 #source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
-df
+#dff
 ```
 
-```{r Instalando e Carregando Pacote GGplot2}
-#if(!require(ggplot2)) install.packages("ggplot2")
-#library(ggplot2)
-```
+```{r Pacotes de graficos}
+library(ggplot2) # graficos
+library(ggthemes) # temas ggplot
+library(scales) # escalas dos eixos
+library(patchwork) # graficos lado a lado => (graf1 + graf2)/graf3
+library(gridExtra) # graficos lado a lado 2 => grid.arrange(p1, p2, ncol=2)
 
-```{r CONFIGURAÇÃO GLOBAL DO TEMA}
-# https://ggplot2-book.org/themes
-# https://ggplot2-book.org/themes#sec-themes
-
-tema = theme_light(base_family = "Times New Roman")
-
-elementos_tema = theme_update( #theme(
-  # Titulo
-  plot.title = element_text(face = "bold", colour = "black"),
-  # Painel -> https://ggplot2-book.org/themes#panel-elements
-  panel.background = element_rect(fill = "white", color = NA), # Background - Plano de Fundo
-  panel.grid.major = element_line(color = "grey80", linewidth = 2, linetype = "dotted"), # Grade
-  panel.grid.minor = element_line(color = "grey90"),
-  # Eixos -> https://ggplot2-book.org/themes#sec-theme-axis
-  axis.title.x = element_text(size = 12, face = "bold"), # Titulo
-  axis.title.y = element_text(size = 12, face = "bold", angle = -30),
-  axis.text.x = element_text(size = 10), # Labels
-  axis.text.y = element_text(size = 10),
-  axis.line = element_line(color = "black"),
-  # Legenda -> https://ggplot2-book.org/themes#legend-elements
-  #legend.position = "bottom",
-  legend.title = element_text(size = 12, face = "bold"),
-  legend.text = element_text(size = 10),
-  plot.margin = margin(10, 10, 10, 10) # Margem
-)
-
-theme_set(tema)
-
-# element_blank() #Nada
-# facet_wrap() facet_grid() -> https://ggplot2-book.org/themes#faceting-elements
-# font face -> https://ggplot2.tidyverse.org/articles/ggplot2-specs.html#font-face
-# themes -> https://ggplot2.tidyverse.org/reference/ggtheme.html
-
+# library(ggpubr) #ggplot (+estatistica) facilitado
+# library(ggsignif) #significancia entre grupos
 ```
 
 
 # Representar Proporções
 
 ```{r Barras Simples}
-
 cont_grafi = function(df, coluna){
   # Criando tabela de contagem
   tabela = df %>% filter(!is.na(!!sym(coluna))) %>% 
     group_by(!!sym(coluna)) %>% 
-    summarise(n = n()) %>% mutate(Freq = round(n/sum(n)*100, 2)) %>% ungroup()
+    summarise(qtd =n()) %>% 
+    mutate(frequencia = round(qtd/sum(qtd)*100, 2)) %>% 
+    ungroup()
   
-  ggplot(tabela, aes(x=as.factor(!!sym(coluna)), y=Freq, label=Freq, fill=as.factor(!!sym(coluna)))) + 
+  ggplot(tabela, aes(x=as.factor(!!sym(coluna)), y=frequencia, label=frequencia, fill=as.factor(!!sym(coluna)))) + 
     geom_col(show.legend=FALSE, color="black") + 
-    geom_text(aes(y=Freq, label = sprintf("%0.1f%%", Freq), vjust=-0.2)) + 
+    geom_text(aes(y=frequencia, label = sprintf("%0.1f%%", frequencia), vjust=-0.5)) +
+    # geom_label(aes(y=frequencia, label = sprintf("%0.1f%%", frequencia)), vjust=-0.5, fill='white') +
     theme(legend.position = "bottom") +
     scale_y_continuous(limits = c(0, 100), breaks=seq(from = 0, to = 100, by = 20)) +
-    labs(x=NULL, y="Frequency (%)", title =NULL)
+    labs(x=NULL, y="frequenciauency (%)", title =NULL)
 }
 
-cont_grafi(df, 'desfecho')
-cont_grafi(df, 'tratamentos')
+cont_grafi(dff, 'desfecho')
+cont_grafi(dff, 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)
 ```
 
@@ -82,20 +55,23 @@ conti_grafi = function(df, coluna_x, coluna_y, sentido_percent='col'){
   # Criando tabela de contagem
   grafi = df %>% filter(!is.na(!!sym(coluna_x)) & !is.na(!!sym(coluna_y))) %>% 
     group_by(!!sym(coluna_y), !!sym(coluna_x)) %>% 
-    summarise(n = n()) %>% mutate(Freq = round(n/sum(n)*100, 2)) %>% ungroup()
+    summarise(qtd = n()) %>% 
+    mutate(frequencia = round(qtd/sum(qtd)*100, 2)) %>% 
+    ungroup()
   
-  ggplot(grafi, aes(x=as.factor(!!sym(coluna_y)), y=Freq, fill=as.factor(!!sym(coluna_x)))) + 
-    # Grafico
-    geom_bar(stat="identity", position=position_dodge(preserve = 'single'), color='black') +
-    # Outros
-    geom_text(aes(y=Freq, label = sprintf("%0.1f%%", Freq)), position=position_dodge(0.75), vjust=-0.2, hjust=0.5) +
+  ggplot(grafi, aes(x=as.factor(!!sym(coluna_y)), y=frequencia, fill=as.factor(!!sym(coluna_x)))) + 
+    geom_bar(stat="identity", position=position_dodge2(preserve = 'single'), color='black') +
+    geom_text(aes(y=frequencia, label = sprintf("%0.1f%%", frequencia)), 
+              position=position_dodge2(width = 0.9, preserve = 'single'), vjust=-0.5, hjust=0.5) +
+    # geom_label(aes(y=frequencia, label = sprintf("%0.1f%%", frequencia)), 
+    #            position=position_dodge2(width = 0.9, preserve = 'single'), vjust=-0.5, hjust=0.5, fill='white') +
     theme(legend.position = "bottom") +
     scale_y_continuous(labels = scales::percent) +
     scale_y_continuous(limits = c(0, 100), breaks=seq(from=0, to=100, by=10)) +
     labs(x=NULL, y='Frequency (%)', title=NULL, fill=NULL)
 }
 
-conti_grafi(df, 'desfecho', 'tratamentos')
+conti_grafi(dff, 'desfecho', 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)
 ```
 
@@ -104,23 +80,37 @@ conti_grafi(df, 'desfecho', 'tratamentos')
 ```{r Graficos Boxplot, Violino, Jitter por Grupos}
 # para representar analise númerica por grupo (variavel: numerica vs categorica)
 
-box_vin_jit = function(df, col_num, col_cat){
+box_vin_jit = function(df, col_num, col_cat, arredondamento = 0){
+  
+  # Calcular medianas e quartis
+  quartis = df %>%
+    group_by(!!sym(col_cat)) %>%
+    summarise(
+      mediana = median(!!sym(col_num), na.rm = TRUE) %>% round(arredondamento),
+      Q1 = quantile(!!sym(col_num), probs = 0.25, na.rm = TRUE) %>% round(arredondamento),
+      Q3 = quantile(!!sym(col_num), probs = 0.75, na.rm = TRUE) %>% round(arredondamento)
+    )
+
   ggplot(df, aes(x=as.factor(!!sym(col_cat)), y=!!sym(col_num), fill=as.factor(!!sym(col_cat)))) + 
     # Graficos
-    geom_jitter(alpha=0.5, show.legend=F, size=2.5, position=position_jitter(0.25)) +
+    #geom_jitter(alpha=0.5, show.legend=F, size=2.5, position=position_jitter(0.25)) +
     geom_violin(alpha=0.2, show.legend=F, fill='white') +
     geom_boxplot(alpha=0.8, show.legend=F, width=0.5) + #outlier.shape = NA
     # Medias extras
-    geom_errorbar(stat = "summary", fun.data = "mean_se", width= 0.3, color="white") + 
-    geom_point(stat = "summary", fun = "mean", show.legend=F, 
+    geom_errorbar(stat = "summary", fun.data = "mean_se", width= 0.3, color="white") +
+    geom_point(stat = "summary", fun = "mean", show.legend=F,
                shape=21, fill='red', color="black", size=3) +
+    # Adicionar labels de texto
+    geom_text(data = quartis, aes(x =!!sym(col_cat), y = mediana,
+                                  label = paste0(mediana, " [",Q1, ' - ', Q3,']')), 
+            vjust = -1.5, hjust = 0.5) +
     # Outros
     theme(legend.position = "bottom") +
     labs(x=NULL, y=NULL, title=NULL)
 }
 
-box_vin_jit(df, 'var_num', 'tratamentos')
-box_vin_jit(df, 'var_num', 'desfecho')
+box_vin_jit(dff, 'var_num', 'tratamentos')
+box_vin_jit(dff, 'var_num', 'desfecho') #+ coord_flip()
 #ggsave("nome_grafico.png", height=10, width=10.5, units="cm", dpi= 600)
 ```
 
@@ -128,12 +118,12 @@ box_vin_jit(df, 'var_num', 'desfecho')
 ```{r Graficos Boxplot, Pontos Pareados}
 # para representar amostras pareadas
 
-box_pareado = function(df_selecionado){
+box_pareado = function(df_selecionado, palavra_padrao_da_coluna_analisada){
   df_filter = na.omit(df_selecionado)
 
   # Transformando para o formato longo
   df_filter$ID = 1:nrow(df_filter)
-  dados_long = pivot_longer(df_filter, cols = starts_with('momento'), 
+  dados_long = pivot_longer(df_filter, cols = starts_with(palavra_padrao_da_coluna_analisada), 
                              names_to = "momentos", values_to = "medida_numerica")
   
   # Grafico
@@ -148,7 +138,8 @@ box_pareado = function(df_selecionado){
     theme(legend.position = "none")
 }
 
-box_pareado(df[c('momento_1', 'momento_2', 'momento_3')])
+box_pareado(dff[c('momento_1', 'momento_2', 'momento_3')], 'momento')
+box_pareado(dff[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
 ```
 
 
@@ -160,28 +151,31 @@ dinamite = function(df, col_num, col_cat){
   tabela = df %>% filter(!is.na(!!sym(col_cat))) %>% 
     group_by(!!sym(col_cat)) %>%
     summarise(
-      mean = mean(!!sym(col_num), na.rm = TRUE),
-      sd = sd(!!sym(col_num), na.rm = TRUE)) %>% 
-    mutate(ymin= mean - sd,
-           ymax= mean + sd)
+      media = mean(!!sym(col_num), na.rm = TRUE),
+      desvio_padrao = sd(!!sym(col_num), na.rm = TRUE)) %>% 
+    mutate(ymin= media - desvio_padrao,
+           ymax= media + desvio_padrao,
+           media = media %>% round(2),
+           desvio_padrao = desvio_padrao %>% round(2))
   tabela$ymin = ifelse(tabela$ymin <= 0, 0.01, tabela$ymin)
   
-  ggplot(tabela, aes(x=as.factor(!!sym(col_cat)), y=mean, fill=as.factor(!!sym(col_cat)))) +
+  ggplot(tabela, aes(x=as.factor(!!sym(col_cat)), y=media, fill=as.factor(!!sym(col_cat)))) +
     # Grafico
     geom_bar(stat="summary", fun="mean", color='black', position=position_dodge(0.75)) +
     geom_errorbar(aes(ymin=ymin, ymax=ymax), width=0.3, position=position_dodge(0.75)) +
     geom_point(stat="summary", fun="mean", position=position_dodge(0.75),
                shape=21, fill='grey70', color="black", size=2) +
     # Outros
-    geom_text(aes(label= round(mean,0)), position= position_dodge(0.75), 
-              vjust=-0.2, hjust=-0.3) +
+    geom_text(aes(label = paste0(media, " (",desvio_padrao,')')),
+              position= position_dodge2(0.75), vjust=-0.5, hjust=-0.05) +
     theme(legend.position= "none") +
     labs(x=NULL, y= "Mean", title=NULL) #+ coord_flip()
 }
 
-dinamite(df, 'var_num', 'desfecho')
-dinamite(df, 'var_num', 'tratamentos')
+dinamite(dff, 'momento_3', 'desfecho')
+dinamite(dff, 'momento_3', 'tratamentos')
 ```
+
 
 ```{r Grafico de Erro}
 grafico_de_erro = function(df, col_num, col_cat){
@@ -189,24 +183,26 @@ grafico_de_erro = function(df, col_num, col_cat){
   tabela = df %>% filter(!is.na(!!sym(col_cat))) %>% 
     group_by(!!sym(col_cat)) %>%
     summarise(
-      mean = mean(!!sym(col_num), na.rm = TRUE),
-      sd = sd(!!sym(col_num), na.rm = TRUE)) %>% 
-    mutate(ymin= mean - sd,
-           ymax= mean + sd)
+      media = mean(!!sym(col_num), na.rm = TRUE),
+      desvio_padrao = sd(!!sym(col_num), na.rm = TRUE)) %>% 
+    mutate(ymin= media - desvio_padrao,
+           ymax= media + desvio_padrao,
+           media = media %>% round(2),
+           desvio_padrao = desvio_padrao %>% round(2))
   tabela$ymin = ifelse(tabela$ymin <= 0, 0.01, tabela$ymin)
   
-  ggplot(tabela, aes(x=as.factor(!!sym(col_cat)), y=mean, color=as.factor(!!sym(col_cat)))) +
+  ggplot(tabela, aes(x=as.factor(!!sym(col_cat)), y=media, color=as.factor(!!sym(col_cat)))) +
     geom_errorbar(aes(ymin=ymin, ymax=ymax), width=0.3, position=position_dodge(0.75)) +
     geom_point(stat="summary", fun="mean", position=position_dodge(0.75),
-               shape=21, fill='grey70', color="black", size=4) +
-    geom_text(aes(label= round(mean,0)), position= position_dodge(0.75),
-              vjust=0.5, hjust=-0.75) +
+               shape=21, fill='grey70', color="black", size=2) +
+    geom_text(aes(label = paste0(media, " (",desvio_padrao,')')), color='black',
+              position= position_dodge2(0.75), hjust=-0.05) +
     theme(legend.position= "none") +
     labs(x=NULL, y= "Mean", title=NULL)
 }
 
-grafico_de_erro(df, 'var_num', 'desfecho')
-grafico_de_erro(df, 'var_num', 'tratamentos')
+grafico_de_erro(dff, 'momento_3', 'desfecho')
+grafico_de_erro(dff, 'momento_3', 'tratamentos')
 ```
 
 
@@ -214,22 +210,22 @@ grafico_de_erro(df, 'var_num', 'tratamentos')
 densidade_grafi = function(df, col_num, col_cat){
   
   if (shapiro.test(df[[col_num]])$p.value == TRUE){
-    medidas = df %>% summarize(med = mean(!!sym(col_num)))
+    medidas = df %>% summarize(medida = mean(!!sym(col_num)))
   } else {
-    medidas = df %>% summarize(med = median(!!sym(col_num)))
+    medidas = df %>% summarize(medida = median(!!sym(col_num)))
   }
   
   ggplot(df, aes(x=!!sym(col_num), fill='tomato')) +
     geom_density(position='identity', alpha =0.5)+
-    geom_vline(data = medidas, aes(xintercept = med, color = 'red'), 
+    geom_vline(data = medidas, aes(xintercept = medida, color = 'red'), 
                linetype="dashed", size=1, show.legend=F) +
-    geom_text(data = medidas, aes(x = med, label = round(med, 1), y = 0), 
+    geom_text(data = medidas, aes(x = medida, label = round(medida, 1), y = 0), 
               color="black", vjust = -0.5, hjust = 1.5) +
     theme(legend.position = "none") +
     labs(x=NULL, y='Probability Density', fill=NULL)
 }
 
-densidade_grafi(df, 'var_num')
+densidade_grafi(dff, 'var_num')
 ```
 
 
@@ -239,30 +235,30 @@ densidade_grafi(df, 'var_num')
 densidade_grafi = function(df, col_num, col_cat){
   
   if (normalidade_por_grupo_criterio(df, col_num, col_cat) == TRUE){
-    medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(med = mean(!!sym(col_num)))
+    medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(medida = mean(!!sym(col_num)))
   } else {
-    medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(med = median(!!sym(col_num)))
+    medidas = df %>% group_by(!!sym(col_cat)) %>% summarize(medida = median(!!sym(col_num)))
   }
   
   ggplot(df, aes(x=!!sym(col_num), fill=as.factor(!!sym(col_cat)))) +
     geom_density(position='identity', alpha =0.5)+
-    geom_vline(data = medidas, aes(xintercept = med, color = as.factor(!!sym(col_cat))), 
+    geom_vline(data = medidas, aes(xintercept = medida, color = as.factor(!!sym(col_cat))), 
                linetype="dashed", size=1, show.legend=F) +
-    geom_text(data = medidas, aes(x = med, label = round(med, 0), y = 0), 
+    geom_text(data = medidas, aes(x = medida, label = round(medida, 0), y = 0), 
               color="black", vjust = -0.5, hjust = 1.5) +
     theme(legend.position = "bottom") +
     labs(x=NULL, y='Probability Density', fill=NULL)
 }
 
-densidade_grafi(df, 'var_num', 'desfecho')
-densidade_grafi(df, 'var_num', 'desfecho') + facet_grid(~desfecho)
-densidade_grafi(df, 'var_num', 'tratamentos') + facet_grid(~tratamentos)
+densidade_grafi(dff, 'momento_3', 'desfecho')
+densidade_grafi(dff, 'momento_3', 'desfecho') + facet_grid(~desfecho)
+densidade_grafi(dff, 'momento_3', 'tratamentos') + facet_grid(~tratamentos)
 ```
 
 
 ```{r Densidade, Teste de Normalidade}
 
-teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1){
+teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T){
   media = mean(df[[coluna]], na.rm=T)
   desvpad = sd(df[[coluna]], na.rm=T)
   
@@ -278,19 +274,226 @@ teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1){
   lista_cor1 = c('red','black','black','black','black','black','black') # COR DA BARRA
   lista_cor2 = c('red','blue','#c1121f','#d68c45','#1b4965','#941b0c','grey45') # COR DA LINHA
   
-  ggplot(df, aes(x=!!sym(coluna)))+
+  p1 = ggplot(df, aes(x=!!sym(coluna)))+
     geom_histogram(aes(y=..density..), bins=qtd_bins, 
-                   fill = alpha(lista_cor0[cor_esc], 0.7), 
+                   fill = lista_cor0[cor_esc], alpha = 0.7, 
                    colour = lista_cor1[cor_esc]) +
     geom_density(lwd = 1.2, linetype = 2, colour = lista_cor2[cor_esc]) +
     geom_function(fun= dnorm, args=list(mean=media,sd=desvpad), col='black', lwd=1, lty=4) +
-    labs(x=NULL, y='Probability Density', subtitle = subtitulo)
+    labs(x=NULL, y='Probability Density', subtitle = subtitulo) +
+    theme_minimal()
+  
+  if (plot_qqplot == T){
+    p2 = ggplot(data = df, aes(sample = !!sym(coluna))) +
+    stat_qq(shape=21, size=2.5, fill=lista_cor0[cor_esc], alpha = 0.5) + 
+    stat_qq_line() +
+    labs(subtitle = '', x = 'Theoretical Quantiles', y = NULL) + #'Standardized Residuals'
+    theme_minimal()
+    return((p1+p2))
+  } else {
+    return(p1)
+  }
 }
 
-teste_normalidade(df, 'var_num', cor_esc = 1)
-#teste_normalidade(df, 'var_num', cor_esc = 2) + facet_grid(~desfecho) + labs(subtitle = NULL)
-#teste_normalidade(df, 'var_num', cor_esc = 3) + facet_grid(tratamentos~.) + labs(subtitle = NULL)
+teste_normalidade(dff, 'var_num', cor_esc = 1)
+teste_normalidade(dff, 'var_num', cor_esc = 2) #+ facet_grid(~desfecho) + labs(subtitle = NULL)
+teste_normalidade(dff, 'var_num', cor_esc = 3) #+ facet_grid(tratamentos~.) + labs(subtitle = NULL)
+teste_normalidade(dff, 'var_num', cor_esc = 4)
+teste_normalidade(dff, 'var_num', cor_esc = 5)
+teste_normalidade(dff, 'var_num', cor_esc = 6) 
 ```
+
+
+
+```{r Grafico de diagnostico de modelos lineares}
+
+#para lidar com objetos lmerMod.
+library(broom)
+library(broom.mixed)
+
+# https://library.virginia.edu/data/articles/diagnostic-plots
+library(lmtest)
+
+# Função para calcular resíduos padronizados
+calc_std_resid <- function(modelo, model_diag) {
+  resid <- residuals(modelo)
+  hat_values <- model_diag$.hat
+  sigma <- sigma(modelo)
+  std_resid <- resid / (sigma * sqrt(1 - hat_values))
+  return(std_resid)
+}
+
+# Função principal
+lm_diagnostic <- function(modelo) {
+  # Obter resíduos e valores ajustados
+  if (inherits(modelo, "lm") | inherits(modelo, "glm")) {
+    model_diag <- augment(modelo)
+    model_diag <- model_diag %>%
+      mutate(.std.resid = rstandard(modelo))
+  } else if (inherits(modelo, "lmerMod") | inherits(modelo, "glmerMod")) {
+    model_diag <- augment(modelo)
+    model_diag <- model_diag %>%
+      mutate(.std.resid = calc_std_resid(modelo, model_diag))
+  } else {
+    stop("O modelo fornecido não é suportado. Use um modelo 'lm' ou 'lmerMod'.")
+  }
+  
+  # Gráfico 1: Residuals vs Fitted - Homogeneidade dos Resíduos
+  p1 <- ggplot(model_diag, aes(.fitted, .resid)) +
+    geom_point(shape=21, size=2, alpha=0.5) +
+    geom_hline(aes(yintercept = 0), linetype="dashed", size=1) +
+    geom_smooth(se = FALSE, color = "red") +
+    labs(title = "Residuals vs Fitted",
+         x = "Fitted values",
+         y = "Residuals")
+  
+  # Gráfico 2: Normal Q-Q - Normalidade dos Resíduos
+  ## teste de hipotese: Normalidade (Shapiro Wilk):
+  p_valor_Shapiro = shapiro.test(model_diag$.std.resid)$p.value %>% retorne_p() %>% retorne_p_ajust()
+  
+  p2 <- ggplot(model_diag, aes(sample = .std.resid)) +
+    stat_qq(shape=21, size=2) + 
+    stat_qq_line() +
+    labs(title = "Normal Q-Q",
+         x = "Theoretical Quantiles",
+         y = "Standardized Residuals",
+    subtitle = paste0('Shapiro-wilk (',p_valor_Shapiro,')'))
+  
+  # Gráfico 3: Scale-Location - Homocedasticidade dos Residuos
+  ## teste de hipotese: Homocedasticidade (Breusch-Pagan):
+  p_valor_Breusch = lmtest::bptest(modelo_lm)$p.value %>% retorne_p() %>% retorne_p_ajust()
+  p3 <- ggplot(model_diag, aes(.fitted, sqrt(abs(.std.resid)))) +
+    geom_point(shape=21, size=2, alpha=0.5) +
+    geom_smooth(se = FALSE, color = "red") +
+    labs(title = "Scale-Location",
+         x = "Fitted values",
+         y = "sqrt(|Standardized Residuals|)",
+         subtitle = paste0('Breusch-Pagan (',p_valor_Breusch,')'))
+  
+  # Gráfico 4: Residuals vs Leverage - Outliers/Pontos de Alavancagem
+  p4 <- ggplot(model_diag, aes(.hat, .std.resid)) +
+    geom_point(shape=21, size=2, alpha=0.5) +
+    geom_smooth(se = FALSE, color = "red") +
+    labs(title = "Residuals vs Leverage",
+         x = "Leverage",
+         y = "Standardized Residuals")
+  
+  # Exibir os gráficos em um layout 2x2
+  return(grid.arrange(p1, p2, p3, p4, ncol = 2))
+}
+
+# Função principal
+glm_diagnostic <- function(modelo) {
+  # Obter resíduos e valores ajustados
+  if (inherits(modelo, "glm")) {
+    model_diag <- augment(modelo)
+    model_diag <- model_diag %>%
+      mutate(.std.resid = rstandard(modelo))
+  } else if (inherits(modelo, "glmerMod")) {
+    model_diag <- augment(modelo)
+    model_diag <- model_diag %>%
+      mutate(.std.resid = calc_std_resid(modelo, model_diag))
+  } else {
+    stop("O modelo fornecido não é suportado. Use um modelo 'lm' ou 'lmerMod'.")
+  }
+  
+  # Gráfico 4: Residuals vs Leverage - Outliers/Pontos de Alavancagem
+  p4 <- ggplot(model_diag, aes(.hat, .std.resid)) +
+    geom_point(shape=21, size=2, alpha=0.5) +
+    geom_smooth(se = FALSE, color = "red") +
+    labs(title = "Residuals vs Leverage",
+         x = "Leverage",
+         y = "Standardized Residuals")
+  
+  # Exibir os gráficos em um layout 2x2
+  return(p4)
+}
+
+modelo = glm(desfecho ~ fixed_effects + group, data = dff, family = binomial())
+glm_diagnostic(modelo)
+
+modelo_lm = lm(desfecho_num ~ var_num, data=dff)
+lm_diagnostic(modelo_lm)
+
+modelo_lmer <- lmerTest::lmer(response ~ fixed_effects + (1|group), data = dff)
+lm_diagnostic(modelo_lmer)
+
+
+#### ALTERNATIVAS:
+## Plotar gráficos diagnósticos usando ggplot2 e ggfortify
+# install.packages("ggfortify")
+# library(ggfortify)
+# autoplot(modelo_lm, which = 1:4, ncol = 2) +
+#   theme_minimal()
+
+## Analise Grafica
+# par(mfrow=c(2,2))
+# plot(modelo_lm)
+
+```
+
+
+```{r Boxplot dos Residuos de Multiplos Modelos}
+
+# Função para extrair resíduos de diferentes tipos de modelos
+extrair_residuos <- function(modelo, nome_modelo) {
+  model_diag <- augment(modelo)
+  model_diag <- model_diag %>% mutate(modelo_nome = nome_modelo)
+  res = model_diag[c('.resid', 'modelo_nome')]
+  return(res)
+}
+
+# Função para combinar resíduos de vários modelos
+combinar_residuos <- function(lista_modelos) {
+  residuos_df <- bind_rows(lapply(seq_along(lista_modelos), function(i) {
+    extrair_residuos(lista_modelos[[i]], paste("Modelo", i))
+  }))
+  return(residuos_df)
+}
+
+# Função para plotar o boxplot dos resíduos
+plotar_boxplot_residuos <- function(lista_modelos, arredondamento = 2) {
+  residuos_df <- combinar_residuos(lista_modelos)
+  df = residuos_df
+  col_cat = 'modelo_nome'
+  col_num = '.resid'
+  # Calcular medianas e quartis
+  quartis = df %>%
+    group_by(!!sym(col_cat)) %>%
+    summarise(
+      mediana = median(!!sym(col_num), na.rm = TRUE) %>% round(arredondamento),
+      Q1 = quantile(!!sym(col_num), probs = 0.25, na.rm = TRUE) %>% round(arredondamento),
+      Q3 = quantile(!!sym(col_num), probs = 0.75, na.rm = TRUE) %>% round(arredondamento)
+    ) %>% 
+    mutate(IQR = (Q3-Q1) %>% round(arredondamento))
+
+  ggplot(df, aes(x=as.factor(!!sym(col_cat)), y=!!sym(col_num), fill=as.factor(!!sym(col_cat)))) + 
+    # Graficos
+    #geom_jitter(alpha=0.5, show.legend=F, size=2.5, position=position_jitter(0.25)) +
+    geom_violin(alpha=0.2, show.legend=F, fill='white') +
+    geom_boxplot(alpha=0.8, show.legend=F, width=0.5) + #outlier.shape = NA
+    # Medias extras
+    geom_errorbar(stat = "summary", fun.data = "mean_se", width= 0.3, color="white") +
+    geom_point(stat = "summary", fun = "mean", show.legend=F,
+               shape=21, fill='red', color="black", size=3) +
+    # Adicionar labels de texto
+    geom_text(data = quartis, aes(x =!!sym(col_cat), y = mediana,
+                                  label = paste0(mediana, " [",Q1, ' - ', Q3,'][',IQR,']')), 
+            vjust = -1.5, hjust = 0.5) +
+    # Outros
+    theme(legend.position = "bottom") +
+    labs(x=NULL, y=NULL, title=NULL) + coord_flip()
+}
+
+# Exemplo de uso
+modelo_lm0 <- lm(response ~ fixed_effects, data = dff)
+modelo_lm <- lm(response ~ fixed_effects + group, data = dff)
+modelo <- lmer(response ~ fixed_effects + (1|group), data = dff)
+
+plotar_boxplot_residuos(list(modelo_lm0, modelo_lm, modelo))
+
+```
+
 
 
 ```{r Grafico de timeline}
@@ -298,16 +501,16 @@ teste_normalidade(df, 'var_num', cor_esc = 1)
 time_line_grafi = function(df, col_num, col_cat){
   tabela = df %>% 
     group_by(!!sym(col_num), !!sym(col_cat)) %>% 
-    summarise(n = n()) %>% mutate(Freq = round(n/sum(n), 2)) %>% ungroup()
+    summarise(qtd =n()) %>% mutate(frequencia = round(n/sum(n), 2)) %>% ungroup()
   #filter(variavel_categorica == 1) %>% ungroup()
   
   ggplot(tabela, aes(x=!!sym(col_num), n, label=n, y=n)) + 
     geom_line() + geom_point(size=2) + 
     geom_text(aes(label = n), nudge_y = 1.5) +
-    theme_bw()
+    theme_classic()
 }
 
-# time_line_grafi(de, 'var_num', 'desfecho')
+#time_line_grafi(de, 'idade', 'desfecho')
 ```
 
 
@@ -329,7 +532,7 @@ fore_plot = function(tabela, titulo = NULL){
     xlab("Odds Ratio (95% CI)") + 
     ylab(" ") + 
     labs(title=titulo) +
-    theme_bw() +
+    theme_classic() +
     theme(panel.border = element_blank(),
           panel.background = element_blank(),
           panel.grid.major = element_blank(), 

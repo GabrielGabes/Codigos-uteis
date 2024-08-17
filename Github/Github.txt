@@ -1,0 +1,137 @@
+https://gitfluence.com/
+https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos
+
+# Exibir o histórico de commits realizados no projeto para revisar as mudanças anteriores:
+git log
+
+#################### SUBIR PROJETO PARA O GIT ####################
+fonte: 
+
+https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/139310
+https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/150170
+
+####################
+
+# Inicializando repositorio
+git init
+
+# Adicionando arquivos
+git add .
+
+# Para criar um repositório local você, digite o seguinte comando no terminal:
+git commit -m "Subindo arquivos do projeto"
+
+####################
+# Caso ainda não tenha feito... Para configurar a identidade do autor do commit:
+git config --global user.email "gabriel_s_anjos@yahoo.com"
+git config --global user.name "GabrielGabes"
+####################
+
+# Para criar a branch Main:
+git branch -M main
+# O comando git branch -m é usado para criar uma nova ramificação no repositório Git atual. Neste caso, criamos a branch padrão main, que representa a versão principal do código.
+
+# Vínculo do repositório do GitHub com o meu repositório local:
+git remote add origin git@github.com:GabrielGabes/YTDownloader.git
+
+# Para subir as alterações no repositório local para o remoto, digite o seguinte comando no terminal:
+git push -u origin main
+
+#################### BAIXAR PROJETO DO GIT ####################
+# digitar no CMD
+git clone https://github.com/GabrielGabes/Google-Analytics-Analise-de-dados-e-Modelagem.git
+
+#################### ATUALIZANDO PROJETO ####################
+
+# Verificar o status atual do repositório para entender quais arquivos foram modificados, adicionados ou excluídos:
+git status
+
+# A saída do comando git status geralmente contém três seções principais:
+# 1. Modificados: Lista os arquivos que foram modificados desde o último commit, mas ainda não foram adicionados à área de preparação (Staging Area).
+# 2. Adicionados: Indica os arquivos que foram adicionados à área de preparação, mas ainda não foram confirmados no histórico de commits.
+# 3. Não rastreados: Exibe os arquivos que não foram rastreados pelo Git, ou seja, que não foram adicionados ao índice de modificações (Staging Area).
+
+# Registrar todas as alterações no projeto, adicionando os arquivos modificados à área de preparação:
+git add .
+
+# Descrever as alterações feitas no projeto e criar um novo commit:
+git commit -m "Descrição das mudanças"
+
+# Exibir o histórico
+git log
+
+# Enviar os commits locais para o repositório remoto:
+git push origin main
+# Substitua "main" pelo nome do branch relevante, se necessário.
+
+
+#################### BAIXAR NOVOS COMITS PARA O REPOSITORIO LOCAL ####################
+
+git pull origin main
+
+
+#################### Desfazendo um commit ####################
+
+# procurando commit rodado para ser desfeito
+git log
+
+# Execução
+git revert #id_do_commit#
+
+#################### Resetando um commit ####################
+# revisar -> https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/139319
+
+git reset --hard #id_do_commit_anterior#
+
+#################### Alterando mensagem do commit anterior ####################
+git commit --amend -m "Mensagem correta"
+
+#################### Exemplo de Readme ####################
+<h1>Jogo do número secreto</h1>
+
+<h2>�� Sobre</h2>
+<p>Projeto utilizado nos cursos de lógica de programação da Alura.</p>
+
+## �� Tecnologias
+<div>
+  <img src="https://img.shields.io/badge/HTML-239120?style=for-the-badge&logo=html5&logoColor=white">
+  <img src="https://img.shields.io/badge/CSS-239120?&style=for-the-badge&logo=css3&logoColor=white">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+</div>
+
+// Código omitido. 
+
+#################### Ignorando arquivos no repositório ####################
+# > Crie um arquivo chamado ".gitignore"
+# > lá coloque todos os arquivo o nome das pastas e arquivos especificos que não devem ser feito commit
+
+# para pastas:
+pasta_teste/
+
+# todos os arquivos com final ".pdf" (exemplo)
+*.pdf
+
+#################### Compartilhando códigos com Gist ####################
+# compartilhando trechos de código
+# revisar -> https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/139324
+
+#################### ####################
+#################### ####################
+
+# referencias: https://cursos.alura.com.br/course/git-github-compartilhando-colaborando-projetos/task/145890
+# continuar em: https://cursos.alura.com.br/course/git-github-dominando-controle-versao-codigo
+
+
+#################### Atualizar tudo e ignorar qualquer warning ####################
+
+# Passo 1: Adicione e comite o .gitignore
+git add .gitignore
+git commit -m "Atualiza o arquivo .gitignore"
+
+# Passo 2: Remova arquivos ignorados do índice e faça um commit
+git rm -r --cached .
+git add .
+git commit -m "Remove arquivos ignorados e atualiza o projeto"
+
+# Passo 3: Atualize o repositório remoto (opcional)
+git push origin main

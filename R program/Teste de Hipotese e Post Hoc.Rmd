@@ -1,0 +1,456 @@
+```{r Dados Ficticios}
+source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
+df
+```
+
+```{r Bibliotecas usadas}
+espacamento = '###########'
+library(tidyr) #manipulação de dados #pivot_longer
+library(tibble) #manipulação de dados
+library(broom) #tem a ver com a bibli tidy()
+```
+
+
+```{r Analise Grafica Rapida}
+conti_grafi(df, 'desfecho', 'tratamentos')
+
+box_vin_jit(df, 'var_num', 'desfecho')
+
+box_vin_jit(df, 'var_num', 'tratamentos')
+```
+
+
+```{r Capturando niveis}
+niveis = df$desfecho %>% as.factor() %>% levels()
+grupo1 = df$var_num[df$desfecho == niveis[1]]
+grupo2 = df$var_num[df$desfecho == niveis[2]]
+```
+
+# Numerica vs Categórica
+
+## Dois Grupos
+
+### Parametrico
+
+```{r Teste de Hipotese: Teste T; Post Hoc: D'Cohen}
+t.test(df$var_num ~ df$desfecho)
+
+cohen.d(grupo1, grupo2)
+```
+
+### Não Parametrico
+
+```{r Teste de hipotese: Mann Whitney / Wilcox | Post Hoc: Hodges Lehmann}
+# Mann Whitney
+wilcox.test(grupo2, grupo1, conf.int = T, paired = F)
+
+# Wilcox Paired
+wilcox.test(grupo2, grupo1, conf.int = T, paired = T)
+```
+
+
+## Três ou mais Grupos
+
+### Parametricos
+
+```{r Teste de Hipotese: Anova}
+library(multcomp)
+
+teste_hip = aov(var_num ~ tratamentos, data=df)
+teste_hip
+
+espacamento 
+
+summary(teste_hip)
+
+# teste_hip_summary = summary(teste_hip)
+# valor_p = teste_hip_summary[[1]][["Pr(>F)"]][1] %>% retorne_p() %>% retorne_p_ajust()
+# valor_p
+```
+
+```{r Dunnet}
+dunnett_test = glht(teste_hip, linfct = mcp(tratamentos = "Dunnett"))
+dunnett_test
+
+espacamento 
+
+pos_teste = summary(dunnett_test)
+pos_teste
+
+# tabela = pos_teste$test[["pvalues"]]
+# p_ab = tabela[1] %>% retorne_p()
+# p_ac = tabela[2] %>% retorne_p()
+```
+
+```{r Tukey}
+pos_teste = TukeyHSD(teste_hip)
+pos_teste
+
+# tabela = pos_teste
+# p_ab = tabela$tratamentos[10] %>% retorne_p()
+# p_ac = tabela$tratamentos[11] %>% retorne_p()
+# p_bc = tabela$tratamentos[12] %>% retorne_p()
+# valores_p_pos_teste = data.frame(A_B = p_ab, A_C = p_ac, B_C = p_bc)
+# valores_p_pos_teste
+```
+
+### Não Parametricos
+
+```{r Teste de hipotese: Kruskal Wallis}
+teste_hip = kruskal.test(var_num ~ tratamentos, data=df)
+teste_hip
+```
+
+
+```{r Dunn}
+library(dunn.test)
+
+pos_teste = dunn.test(df$var_num, df$tratamentos, method="bonferroni")
+pos_teste
+
+# tabela = pos_teste$P.adjusted
+# p_ab = tabela[1] %>% retorne_p()
+# p_bc = tabela[3] %>% retorne_p()
+# p_ac = tabela[2] %>% retorne_p()
+```
+
+
+```{r Bonferroni}
+#qualquer teste
+pos_teste = pairwise.t.test(df$var_num, df$tratamentos, p.adjust.method = "bonferroni", data=df)
+pos_teste
+
+# tabela = pos_teste
+# p_ab = tabela$p.value[1] %>% retorne_p()
+# p_bc = tabela$p.value[3] %>% retorne_p()
+# p_ac = tabela$p.value[2] %>% retorne_p()
+```
+
+### Pareado
+
+```{r}
+box_pareado(df[c('momento_1', 'momento_2', 'momento_3')], 'momento')
+```
+
+
+```{r Preparando os dados}
+df_filter = dplyr::select(df, momento_1, momento_2, momento_3)
+df_filter = na.omit(df_filter)
+df_filter_matrix = as.matrix(df_filter)
+df_filter
+```
+
+```{r Teste de hipotese: Friedman}
+
+friedman.test(df_filter_matrix)
+
+```
+
+```{r Nemenyi}
+library(PMCMRplus)
+
+pos_teste = frdAllPairsNemenyiTest(df_filter_matrix)
+pos_teste %>% summary()
+```
+
+### Linear Mixed Effect Model
+
+```{r Grafico}
+box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento')
+box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
+```
+
+```{r organizando os dados - formato longo}
+
+df_filter = dplyr::select(df, momento_1, momento_2, momento_3, tratamentos)
+df_filter = na.omit(df_filter)
+
+# Transformando para o formato longo
+df_filter$ID = 1:nrow(df_filter)
+dados_long = pivot_longer(df_filter, cols = starts_with('momento'), 
+                           names_to = "momentos", values_to = "medida_numerica")
+
+# Realizando múltiplas comparações para interações
+dados_long$inter_ <- factor(interaction(dados_long$tratamentos, dados_long$momentos))
+dados_long
+
+```
+
+```{r pacotes}
+#library(miscTools) # lmer
+library(multcomp) # para avaliar multcomparaçõess
+
+library(lmerTest) # é melhor que library(lme4)
+library(MuMIn) # R quadrado para modelos mistos # 
+# R2m = proporção explica apenas pelas variaveis fixas 
+# R2c = proporção explica pelas variaveis fixas e aleatoria # R quadrado geral
+# r.squaredGLMM(modelo) #código de aplicação
+
+library(pander)
+# anova(modelo) %>% pander()
+# para avaliar a significancia geral dos preditores
+
+```
+
+
+```{r aplicando modelo: intereção apenas com intercepto}
+
+# primeiro modelo teste 
+modelo = lmer(medida_numerica ~ momentos + (1|ID), data= dados_long, REML=F)
+metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+
+# segundo modelo teste
+modelo = lmer(medida_numerica ~ momentos * tratamentos + (1|ID), data= dados_long, REML=F)
+metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+summary(modelo)
+
+# terceiro modelo teste # MODELO ESCOLHIDO
+modelo = lmer(medida_numerica ~ inter_ + (1|ID), data= dados_long, REML=F)
+metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+summary(modelo)
+
+summary(modelo)
+post_hoc = glht(modelo, linfct = mcp(inter_ = "Tukey", interaction_average=TRUE)) # Post test do modelo
+summary(post_hoc)
+confint(post_hoc)
+
+```
+
+```{r aplicando modelo: intereção com intercepto e inclinação}
+
+# primeiro modelo teste 
+modelo = lmer(medida_numerica ~ momentos + (momentos|ID), data= dados_long, REML=F)
+metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+
+# segundo modelo teste
+modelo = lmer(medida_numerica ~ momentos * tratamentos + (1|ID), data= dados_long, REML=F)
+metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+summary(modelo)
+
+# terceiro modelo teste # MODELO ESCOLHIDO
+modelo = lmer(medida_numerica ~ inter_ + (1|ID), data= dados_long, REML=F)
+metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+summary(modelo)
+
+summary(modelo)
+post_hoc = glht(modelo, linfct = mcp(inter_ = "Tukey", interaction_average=TRUE)) # Post test do modelo
+summary(post_hoc)
+confint(post_hoc)
+
+```
+
+
+```{r}
+summary_numerico_por_grupo_parametrico(df, 'momento_1', 'tratamentos')
+df %>% group_by(tratamentos) %>% summarise(media = mean(momento_1))
+```
+
+```{r}
+box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
+```
+
+
+# Categorico vs Categorico
+
+https://chat.openai.com/c/fbb1b4e2-f18a-4e98-9282-f09fc0bd2f7f
+
+```{r Teste de Hipotese: Fisher}
+teste_hip = fisher.test(df$desfecho, df$tratamentos)
+teste_hip
+```
+
+
+```{r Teste de Hipotese: Qui-Quadrado}
+teste_hip = chisq.test(df$desfecho, df$tratamentos)
+teste_hip
+```
+
+
+```{r Qui-Quadrado e Analise de Residuos}
+teste_hip = chisq.test(df$desfecho, df$tratamentos)
+
+# Valores observados
+teste_hip$observed
+
+espacamento 
+
+# Valores esperados
+teste_hip$expected
+
+espacamento 
+
+# Resíduos
+teste_hip$residuals
+
+espacamento 
+
+# Resíduos padronizados
+teste_hip$stdres
+
+```
+
+
+```{r Multiple Comparisons using multcomp in R}
+# Ajustar um modelo linear generalizado
+glm_model = glm(desfecho ~ tratamentos, family = binomial, data=df)
+summary(glm_model)
+exp(cbind(OR=coef(glm_model), confint(glm_model))) %>% round(2)
+# predict(glm_model, type="response") # predicted values
+# residuals(glm_model, type="deviance") # residuals
+
+library(multcomp)
+# Realizar comparações múltiplas
+comp = glht(glm_model, linfct = mcp(tratamentos = "Tukey"))
+
+# Tabela com Multicomparações - Post Hoc
+summary(comp)
+
+# Tabela o intervalos de confiança
+confint(comp)
+```
+
+
+```{r pairwise Nominal Independence with rcompanion}
+library(rcompanion)
+
+tabela = table(df$desfecho, df$tratamentos)
+
+# Tabela com Multicomparações - Post Hoc
+pos_teste = pairwiseNominalIndependence(tabela,
+                                        fisher = FALSE,
+                                        gtest  = FALSE,
+                                        chisq  = TRUE,
+                                        method = "holm")
+pos_teste
+
+# pos_teste = apply_retorne_p(pos_teste, "p.Chisq")
+# pos_teste = apply_retorne_p(pos_teste, "p.adj.Chisq")
+# pos_teste
+```
+
+
+```{r pairwise.prop.test}
+tabela = table(df$tratamentos, df$desfecho)
+
+# Tabela com Multicomparações - Post Hoc
+pos_teste = pairwise.prop.test(tabela)
+pos_teste
+```
+
+
+```{r Anova}
+resultados = aov(as.numeric(desfecho) ~ tratamentos, data=df) 
+
+# Teste de Hipotese
+summary(resultados)
+
+# Tabela com Multicomparações - Post Hoc
+pos_teste = TukeyHSD(resultados)
+pos_teste
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# l_y = 33
+# #traços
+# y_altura_ab = 29
+# y_altura_bc = 30
+# y_altura_ac = 32
+# summary(df$var_num)
+# texto_altura_ab = y_altura_ab + 1
+# texto_altura_bc = y_altura_bc + 1
+# texto_altura_ac = y_altura_ac + 1
+# 
+# subtitulo = paste(valor_p, '(Anova)')
+# 
+# ggplot(df, aes(x=as.factor(x=tratamentos), y=var_num, fill=as.factor(tratamentos))) + 
+#   geom_jitter(alpha=0.5, show.legend = F, size=2.5, position=position_jitter(0.25)) +
+#   geom_violin(alpha=0.2, show.legend = F, fill='white') +
+#   geom_boxplot(alpha=0.8, show.legend = F, width=0.5) + 
+#   geom_errorbar(stat = "summary", fun.data = "mean_se", width= 0.3, color="white") +
+#   geom_point(stat = "summary", fun = "mean", show.legend = F, color="red", size=2) +
+#   labs(x="Groups", y='Var', subtitle=subtitulo) + 
+#   theme(legend.position = "bottom") + theme_bw() +
+#   scale_y_continuous(limits = c(10, 33), breaks=seq(from = 10, to = 100, by = 2)) +
+#   # COMPARAÇÃO A e B
+#   geom_segment(aes(x='A',xend ='B', y=y_altura_ab, yend=y_altura_ab), color = "black") +
+#   geom_segment(aes(x='A',xend ='A', y=y_altura_ab, yend=y_altura_ab-.5), color = "black") +
+#   geom_segment(aes(x='B',xend ='B', y=y_altura_ab, yend=y_altura_ab-.5), color = "black") +
+#   annotate("text", x=1.5, y=texto_altura_ab, label=p_ab, vjust = 0.7, size = 4, color = "black") +
+#   # COMPARAÇÃO B e C
+#   geom_segment(aes(x='B',xend ='C', y=y_altura_bc, yend=y_altura_bc), color = "black") +
+#   geom_segment(aes(x='B',xend ='B', y=y_altura_bc, yend=y_altura_bc-.5), color = "black") +
+#   geom_segment(aes(x='C',xend ='C', y=y_altura_bc, yend=y_altura_bc-.5), color = "black") +
+#   annotate("text", x=2.5, y=texto_altura_bc, label=p_bc, vjust = 0.7, size = 4, color = "black") +
+#   # COMPARAÇÃO A e C
+#   geom_segment(aes(x='A',xend ='C', y=y_altura_ac, yend=y_altura_ac), color = "black") +
+#   geom_segment(aes(x='A',xend ='A', y=y_altura_ac, yend=y_altura_ac-.5), color = "black") +
+#   geom_segment(aes(x='C',xend ='C', y=y_altura_ac, yend=y_altura_ac-.5), color = "black") + 
+#   annotate("text", x=2, y=texto_altura_ac, label=p_ac, vjust = 0.7, size = 4, color = "black")
+# 
+# #ggsave("SAULOO.png", height=15, width=15, units="cm", dpi= 600)
+# #######
+# 
+# y = matrix(c(
+#   3.88, 5.64, 5.76, 4.25, 5.91, 4.33, 30.58, 30.14, 16.92,
+#   23.19, 26.74, 10.91, 25.24, 33.52, 25.45, 18.85, 20.45,
+#   26.67, 4.44, 7.94, 4.04, 4.4, 4.23, 4.36, 29.41, 30.72,
+#   32.92, 28.23, 23.35, 12, 38.87, 33.12, 39.15, 28.06, 38.23, 26.65),nrow=6, ncol=6,
+# dimnames=list(1:6, LETTERS[1:6]))
+# 
+# 
+# frdAllPairsNemenyiTest(y)
+# friedmanTest(y)
+
+```
+
+https://chatgpt.com/share/d27612cd-3eec-4ba8-b385-6b0862bb26de
+```{r}
+binom.test(15, 100, p = 0.20, alternative = c("less")) #distribuição binomial
+prop.test(15, 100, p = 0.20, alternative="less", correct="TRUE") #distrubuição qui-quadrado
+prop.test(15, 100, p = 0.20, alternative="less", correct="FALSE") #distribuição normal
+```
+

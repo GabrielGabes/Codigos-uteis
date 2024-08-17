@@ -1,0 +1,398 @@
+# Carregamento de base
+
+```{r Carregando o Banco de dados}
+
+library(readxl) # importar arquivos com final 'xlsx'
+df = read_excel("caminho/do/seu/arquivo.xlsx")
+df = read_excel("df.xlsx") 
+
+library(readr) # importar arquivos com final 'csv'
+df = read_csv("caminho/do/seu/arquivo.csv")
+
+library(gdata) # importar arquivos com final 'xls'
+df = read.xls("caminho/do/seu/arquivo.xls")
+
+```
+
+
+```{r Criando dados ficticios para treino}
+# Carregando ou instalando pacotes necessários
+library(dplyr)
+library(tidyr)
+
+# Configurando a semente aleatória para reprodutibilidade
+set.seed(1)
+
+# Tamanho da amostra
+tamanho_amostra <- 500
+n <- tamanho_amostra / 2
+
+# Criando uma coluna de desfecho (não/sim)
+desfecho <- c(rep("não", n), rep("sim", n))
+
+# Filtros para separar os grupos
+filtro_nao <- desfecho == "não"
+filtro_sim <- desfecho == "sim"
+
+# Criando um DataFrame vazio com a coluna 'desfecho'
+df <- data.frame(desfecho = desfecho)
+
+# Criando as outras colunas como NA inicialmente
+lista_col <- c("idade","altura","peso","genero","genero_pcr","tabagismo","avc_previo","hipo","has","dm","doenca_cardiaca","FC",
+               'momento_1','momento_2','momento_3')
+for (coluna in lista_col) {
+  df[[coluna]] <- NA
+}
+
+# Preenchendo os dados categóricos
+df$genero[filtro_nao] <- sample(c("F", "M"), size = n, replace = TRUE, prob = c(0.7, 0.3))
+df$genero[filtro_sim] <- sample(c("F", "M"), size = n, replace = TRUE, prob = c(0.4, 0.6))
+
+df$genero_pcr[filtro_nao] <- sample(c("F", "M"), size = n, replace = TRUE, prob = c(0.7, 0.3))
+df$genero_pcr[filtro_sim] <- sample(c("F", "M"), size = n, replace = TRUE, prob = c(0.4, 0.6))
+
+df$tabagismo[filtro_nao] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.4, 0.6))
+df$tabagismo[filtro_sim] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.3, 0.7))
+
+df$avc_previo[filtro_nao] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.3, 0.7))
+df$avc_previo[filtro_sim] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.5, 0.5))
+
+df$hipo[filtro_nao] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.2, 0.8))
+df$hipo[filtro_sim] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.3, 0.7))
+
+df$has[filtro_nao] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.5, 0.5))
+df$has[filtro_sim] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.2, 0.8))
+
+df$dm[filtro_nao] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.8, 0.2))
+df$dm[filtro_sim] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.3, 0.7))
+
+df$doenca_cardiaca[filtro_nao] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.2, 0.8))
+df$doenca_cardiaca[filtro_sim] <- sample(c("não", "sim"), size = n, replace = TRUE, prob = c(0.6, 0.4))
+
+df$asa[filtro_nao] <- sample(c("1", "2", "3"), size = n, replace = TRUE)
+df$asa[filtro_sim] <- sample(c("1", "2", "3"), size = n, replace = TRUE, prob = c(0.2, 0.3, 0.5))
+
+# Preenchendo os dados numéricos
+df$idade[filtro_nao] <- round(rnorm(n, mean = 20, sd = 4))
+df$idade[filtro_sim] <- round(rnorm(n, mean = 30, sd = 5))
+
+df$altura[filtro_nao] <- rpois(n, 150)
+df$altura[filtro_sim] <- rpois(n, 180)
+
+df$peso[filtro_nao] <- round(rnorm(n, mean = 50, sd = 20))
+df$peso[filtro_sim] <- round(rnorm(n, mean = 80, sd = 20))
+
+df$FC[filtro_nao] <- runif(n, min = 50, max = 90)
+df$FC[filtro_sim] <- runif(n, min = 30, max = 140)
+
+df$momento_1 <- runif(n, min = 50, max = 90)
+df$momento_2 <- runif(n, min = 50, max = 90)
+df$momento_3 <- runif(n, min = 50, max = 90)
+
+# Acrescentando problemas para aprender sobre limpeza de dados
+df[seq(1, 500, 100),]$idade = sample(c('cinco','seis','sete'), size = length(seq(1, 500, 100)), replace = TRUE)
+df[seq(1, 500, 100),]$tabagismo = sample(c('fumante','não fuma','não fumante'), size = length(seq(1, 500, 100)), replace = TRUE)
+
+# Exibindo as primeiras linhas do DataFrame resultante
+df
+```
+
+# Resumo dos dados
+
+```{r Resumo dos dados com pacote skimr}
+library(skimr) #resumo dos dados
+
+skim(df)
+```
+
+```{r Resumo dos dados com pacote dplyr}
+library(dplyr)
+
+glimpse(df)
+```
+# Tratamentos Iniciais do banco
+
+TIPO DE COLUNAS: 
+  
+  Numericas:
+    1. numeric (numérico): Colunas que contêm valores numéricos, como números inteiros ou números de ponto flutuante.
+    2. double (numérico): Mesma coisa de numeric, só muda internamente, geralmente tanto faz um ou outro
+  
+  Categoricas:
+    3. character (caractere): Colunas que contêm valores de texto.
+    4. factor (fator): Colunas que representam variáveis categóricas com um número limitado de níveis ou categorias.
+                      Internamente, os fatores são representados como inteiros, com um mapeamento para os níveis de fator.
+  
+  Binarios/lógico:
+    5.logical (lógico): Colunas que contêm valores banarios-lógicos [TRUE ou FALSE] [0 ou 1]
+  
+  Data e Tempo:
+    6.Date (data): Colunas que contêm datas.
+    7.POSIXct (tempo): Colunas que contêm informações de data e hora em um formato específico do POSIX.
+
+
+## Categoricas
+
+```{r Visualizar os niveis de uma variavel categorica}
+
+levels(df$genero)
+
+# modificando nivel
+df$genero = as.factor(df$genero)
+levels(df$genero)
+
+# mudando a ordem dos itens
+df$genero = factor(df$genero, levels=c('M','F') )
+levels(df$genero)
+
+# OBS: modelos de Machine Learning ñ funcionam com character, é preciso transformar para com factor 
+```
+
+```{r (EXTRA) Loop para transformar todas colunas 'character' em 'factor'}
+
+for (coluna in names(df)){
+  #capturando o tipo da coluna
+  classe = class(df[[coluna]]) 
+  
+  #condicional para aplicar transformação para variaveis character
+  if (classe == 'character'){
+    
+    df[[coluna]] = as.factor(df[[coluna]])
+    
+    # Texto para visualizar os niveis:
+    texto = paste(coluna, '===================================')
+    print(texto)
+    
+    print(levels(df[[colunas]])) #niveis da coluna
+  }
+}
+```
+
+```{r Modificando o nome dos niveis}
+########################################################
+#                 Variavel Factor
+
+levels(df$genero)
+levels(df$genero) <- c('Masculino', 'Feminino')
+levels(df$genero)
+
+########################################################
+#                 Variavel Character
+
+table(df$genero_pcr)
+df$genero_pcr[df$genero_pcr == 'F'] = 'Feminino'
+df$genero_pcr[df$genero_pcr == 'M'] = 'Masculino'
+table(df$genero_pcr)
+
+```
+
+## Numéricas
+
+```{r Tranformando variavel character em numerica}
+
+levels(factor(df$idade))
+
+# substituindo a informação
+df$idade[df$idade == 'cinco'] = 5
+df$idade[df$idade == 'seis'] = 6
+df$idade[df$idade == 'sete'] = 7
+levels(factor(df$idade))
+
+# alterando o tipo da coluna
+# pode ser um ou outro, literalmente tanto faz
+df$idade = as.numeric(df$idade)
+df$idade = as.double(df$idade)
+
+
+```
+# Outros pré-processamentos
+
+```{r Operações com colunas}
+
+# *visualizando*  o nome de todas colunas
+names(df)
+
+# *excluindo* coluna indesejada
+df$id = NULL
+
+# definir a ordem das variáveis ou aplicar filtro 
+nova_ordem = c("variavel1", "variavel2", "variavel3")
+df = df[, nova_ordem]
+
+# *Renomeando* colunas
+names(dados) <- c("novo_nome_variavel1", "novo_nome_variavel2") # trocando todas de uma vez
+names(df)[names(df) == "coluna1"] = "nova_coluna" # uma por vez
+
+# padronizar nomes de variáveis (por exemplo, para minúsculas)
+names(dados) = tolower(names(dados))
+
+
+```
+
+```{r Criando novas colunas}
+# operação matematica
+df$altura = df$altura/100
+df$imc = df$peso / df$altura^2
+
+# ponto de corte (coluna binaria) (exemplo: idade > 35)
+df$idade_categorica = ifelse(df$idade > 35, 1, 0)
+
+# variavel composta
+df$diabetes_obeso = NA
+df$diabetes_obeso[df$imc < 35 & df$dm == 0] = 'saudavel'
+df$diabetes_obeso[df$imc > 35 & df$dm == 0] = 'apenas obeso'
+df$diabetes_obeso[df$imc < 35 & df$dm == 1] = 'apenas diabetico'
+df$diabetes_obeso[df$imc > 35 & df$dm == 1] = 'obeso e diabetico'
+df$diabetes_obeso = factor(df$diabetes_obeso)
+```
+
+
+Testes de hipotese
+
+```{r Testes de Aderencia}
+
+# #Normalidade ####
+
+# Shapiro
+shapiro.test(df$idade)
+
+# Kolmogorov-Smirnov
+media = mean(df$idade)
+desvio_pad = sd(df$idade)
+ks.test(df$idade, "pnorm", mean = media, sd = desvio_pad)
+
+##### BONUS
+# Shapiro por grupo
+library(RVAideMemoire)
+byf.shapiro(df$idade ~ df$desfecho)
+
+```
+
+```{r Testes de duas variaveis}
+
+# Teste T
+t.test(df$idade, df$grupo)
+
+# Mann Whitney
+wilcox.test(df$idade, df$grupo)
+
+```
+
+# Aplicando Machine Learning
+
+## Modelos linear - Regressão lineares
+
+```{r criando modelos}
+
+# modelo simples e/ou multipla
+modelo = lm(glicemia_pos ~ genero + estenose, data = df)
+
+# modelo com interação
+modelo = lm(glicemia_pos ~ genero * estenose, data = df)
+
+# modelo com transformações
+modelo = lm(log(y) ~ sqrt(x1) + x2^2, data = dados)
+
+```
+
+### Avaliando Modelo - Avaliando ajuste do modelo
+
+```{r avaliação}
+
+# Teste de hipotese sobre cada parametro, R², R-ajustado # Sumário do modelo
+summary(modelo)
+
+# Analise de residuos
+plot(modelo)
+
+# Teste F para avaliar a significância global do modelo
+anova(modelo)
+
+# AIC
+AIC(modelo)
+
+# BIC
+BIC(modelo)
+
+```
+
+```{r (EXTRA) Função de avaliação de modelos linear (data-science)}
+metrics_aval = function(modelo, var_y){
+  # Previsões do modelo
+  predictions = predict(modelo)
+  
+  # MAE - Mean Absolute Error
+  MAE = mean(abs(df[[var_y]] - predictions)) %>% round(2)
+  
+  # MSE - Mean Squared Error
+  MSE = mean((df[[var_y]] - predictions)^2) %>% round(2)
+  
+  # RMSE - Root Mean Squared Error
+  RMSE = sqrt(MSE) %>% round(2)
+  
+  # MAPE - Mean Absolute Percentage Error
+  MAPE = mean(abs((df[[var_y]] - predictions) / df[[var_y]])) * 100
+  MAPE = MAPE %>% round(2)
+  
+  # Retorna os resultados concatenados em uma string
+  return(paste("MAE:", MAE, "; MSE:", MSE, "; RMSE:", RMSE, "; MAPE:", MAPE))
+}
+
+metrics_aval(modelo, 'glicemia_pos')
+
+```
+
+## Modelos Lineares Generalizados
+
+```{r}
+
+# regressão logística
+modelo = glm(desfecho ~ genero, data = df, family = binomial)
+
+# regressão de Poisson
+modelo <- glm(desfecho ~ genero, data = dados, family = poisson)
+
+```
+
+```{r}
+
+# Sumário do modelo
+summary(modelo)
+
+# Calcular odds ratio ou risk relative
+exp(coef(modelo))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
