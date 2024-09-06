@@ -1,0 +1,193 @@
+```{r}
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/executar_sempre.R')
+```
+
+```{r}
+library(GGally)
+library(PerformanceAnalytics)
+
+# Exemplo de matriz de correlação adaptativa com PerformanceAnalytics
+chart.Correlation(dff[sapply(dff, is.numeric)], histogram=TRUE, pch=19)
+```
+
+
+```{r}
+cor.test(dff$idade, dff$peso, use = "complete.obs") #%>% tidy() %>% .$p.value %>% pval_string()
+```
+```{r}
+cor.hip = function(x, y, rho_null = 0.5, use = 'everything', method = 'pearson'){
+  cor_obs = cor(x, y, use = use, method = method)
+  
+  # rho_null # Definindo o valor da correlação nula (0.5)
+  
+  # Transformação de Fisher
+  z_obs <- atanh(cor_obs)
+  z_null <- atanh(rho_null)
+  
+  # Calculando o valor de t
+  n <- sum(complete.cases(x, y))  # Número de observações válidas
+  t_value <- (z_obs - z_null) / sqrt(1 / (n - 3))
+  
+  # Calculando o p-value para a hipótese alternativa que cor > 0.5
+  p_value <- pt(t_value, df = n - 1, lower.tail = FALSE)
+  
+  # Resultado
+  list(
+    cor = cor_obs,
+    t_value = t_value,
+    p.value = p_value,
+    alternative_hypothesis = paste("correlation >", rho_null)
+  )
+}
+
+cor.hip(dff$idade, dff$peso)
+```
+
+
+
+```{r}
+teste_num_cat = function(df, col_num, col_cat){
+
+  qtd_levels = length(levels(as.factor(df[[col_cat]])))
+  
+  if ( group_normality_test(df, col_num, col_cat, 1) ){
+    if ( qtd_levels <= 2 ){
+      formula = formula(paste0(col_num, '~', col_cat))
+      
+      # Verificando homogenidade
+      teste_homogeneidade = bartlett.test(formula, df)
+      # h0 = as varianças são homogeneas
+      
+      if (teste_homogeneidade$p.value > 0.05){
+        teste_usado = "Student's t-test"
+        pvalor = t.test(df[[col_num]]~df[[col_cat]], var.equal=T)$p.value
+      } else {
+        teste_usado = "Welch's t-test"
+        pvalor = t.test(df[[col_num]]~df[[col_cat]], var.equal=F)$p.value
+      }
+    } else{
+      pvalor = summary(aov(df[[col_num]]~df[[col_cat]]))[[1]][["Pr(>F)"]][1]  
+      teste_usado = "Anova"
+    }
+  } else{
+    if ( qtd_levels > 2 ){
+      pvalor = kruskal.test(df[[col_num]]~df[[col_cat]])$p.value
+      teste_usado = "Kruskal-Wallis"
+    } else{
+      pvalor = wilcox.test(df[[col_num]]~df[[col_cat]])$p.value
+      teste_usado = "Mann-Whitney"
+    }
+  }
+  
+  list(p.value = pvalor, 
+       test = teste_usado)
+}
+
+teste_num_cat(dff, 'desfecho_num', 'desfecho')$p.value
+```
+
+```{r}
+library(dplyr)
+library(broom)
+
+# Função para criar uma matriz adaptativa de correlações e testes
+adaptive_matrix <- function(df) {
+  n <- ncol(df)
+  result <- matrix(NA, n, n)  # Inicializa a matriz com NA
+  colnames(result) <- rownames(result) <- colnames(df)
+  
+  for (i in 1:n) {
+    for (j in 1:n) {
+      result[i, j] <- tryCatch({
+        if (i == j) {
+          "1"  # Correlation with itself
+        } else if ( is.numeric(df[[i]]) && is.numeric(df[[j]]) ){
+          #cor.test(df[[i]], df[[j]], use = "complete.obs") %>% tidy() %>% .$p.value %>% pval_string()
+          cor.hip(df[[i]], df[[j]])$p.value %>% pval_string()
+        } else if ( ( is.factor(df[[i]]) | is.character(df[[i]])) && is.numeric(df[[j]]) ){
+          teste_num_cat(df, names(df[j]), names(df[i]) )$p.value %>% pval_string()
+        } else if ( is.numeric(df[[i]]) && ( is.factor(df[[j]]) | is.character(df[[j]])) ){
+          teste_num_cat(df, names(df[i]), names(df[j]) )$p.value %>% pval_string()
+        } else if ( is.factor(df[[i]]) && is.factor(df[[j]]) ){
+          chisq.test(table(df[[i]], df[[j]]), correct = F) %>% tidy() %>% .$p.value %>% pval_string()
+        } else {
+          NA  # Para casos inesperados
+        }
+      }, error = function(e) {
+        NA  # Retorna NA em caso de erro
+      })
+    }
+  }
+  
+  return(result)
+}
+
+# Aplicando a função ao seu data frame
+result_matrix <- adaptive_matrix(dff) %>% as.data.frame()
+print(result_matrix)
+
+```
+
+
+
+
+
+
+```{r}
+# Definindo as variáveis
+x <- dff$idade
+y <- dff$peso
+
+# Calculando a correlação observada
+cor_obs <- cor(x, y, use = "complete.obs")
+
+# Definindo os valores de correlação nula (-0.5 e 0.5)
+rho_null_lower <- -0.5
+rho_null_upper <- 0.5
+
+# Transformação de Fisher
+z_obs <- atanh(cor_obs)
+z_null_lower <- atanh(rho_null_lower)
+z_null_upper <- atanh(rho_null_upper)
+
+# Calculando o valor de t para os dois limites
+n <- sum(complete.cases(x, y))  # Número de observações válidas
+t_value_lower <- (z_obs - z_null_lower) / sqrt(1 / (n - 3))
+t_value_upper <- (z_obs - z_null_upper) / sqrt(1 / (n - 3))
+
+# Calculando os p-values para ambas as hipóteses alternativas
+p_value_lower <- pt(t_value_lower, df = n - 1, lower.tail = TRUE)
+p_value_upper <- pt(t_value_upper, df = n - 1, lower.tail = FALSE)
+
+# Combinação dos p-values para o teste bicaudal
+p_value_combined <- 2 * min(p_value_lower, p_value_upper)
+
+# Resultado
+list(
+  cor = cor_obs,
+  t_value_lower = t_value_lower,
+  t_value_upper = t_value_upper,
+  p_value_lower = p_value_lower,
+  p_value_upper = p_value_upper,
+  p_value_combined = p_value_combined,
+  alternative_hypothesis = "correlation < -0.5 or > 0.5"
+)
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

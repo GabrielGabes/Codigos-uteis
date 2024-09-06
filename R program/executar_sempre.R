@@ -68,7 +68,7 @@ source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerado
 
 #### Compilando arquivos .RMD ####
 pacman::p_load(knitr)
-#knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
+knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Graficos_GGplot.Rmd")
 source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/Graficos_GGplot.R')
 
@@ -94,3 +94,8 @@ pacman::p_load(
 
 
 'AMBIENTE PRONTO PARA TRABALHO'
+
+pacman::p_load(clipr) # captura dos dados => write_clip
+capture = function(tabela, col_names=TRUE, pontuacao=','){
+  tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
+}

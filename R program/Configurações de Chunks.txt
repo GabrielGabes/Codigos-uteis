@@ -1,0 +1,97 @@
+
+### Principais Opções de Configuração
+
+Aqui estão algumas das opções mais comuns que você pode usar em um chunk de código R:
+
+- **`eval`**: Define se o código no chunk será ou não avaliado/executado.
+  - `eval = TRUE` (padrão): O código é executado.
+  - `eval = FALSE`: O código não é executado.
+
+- **`echo`**: Controla se o código R será exibido no documento final.
+  - `echo = TRUE` (padrão): O código é mostrado.
+  - `echo = FALSE`: O código não é mostrado, apenas os resultados.
+
+- **`include`**: Define se tanto o código quanto os resultados são incluídos no documento final.
+  - `include = TRUE` (padrão): O código e os resultados são incluídos.
+  - `include = FALSE`: O código e os resultados não são incluídos, mas o código ainda é executado.
+
+- **`message`**: Controla se as mensagens geradas durante a execução do código são exibidas.
+  - `message = TRUE` (padrão): As mensagens são mostradas.
+  - `message = FALSE`: As mensagens são suprimidas.
+
+- **`warning`**: Controla se os avisos gerados durante a execução do código são exibidos.
+  - `warning = TRUE` (padrão): Os avisos são mostrados.
+  - `warning = FALSE`: Os avisos são suprimidos.
+
+- **`error`**: Define se o chunk deve continuar a ser executado mesmo se ocorrer um erro.
+  - `error = FALSE` (padrão): Interrompe a execução em caso de erro.
+  - `error = TRUE`: Continua a execução mesmo em caso de erro, mostrando o erro.
+
+- **`results`**: Define como os resultados são exibidos.
+  - `results = "asis"`: O resultado é inserido diretamente (por exemplo, para inserir tabelas formatadas em LaTeX ou HTML).
+  - `results = "markup"` (padrão): O resultado é formatado de acordo com a linguagem de saída (Markdown, LaTeX, HTML).
+  - `results = "hide"`: Nenhum resultado é mostrado.
+  - `results = "hold"`: Todos os resultados são agrupados e mostrados após a execução do chunk.
+
+- **`fig.width` e `fig.height`**: Define a largura e altura das figuras geradas em polegadas.
+  - Exemplo: `fig.width = 7, fig.height = 5`.
+
+- **`fig.align`**: Define o alinhamento das figuras.
+  - `fig.align = "default"` (padrão): Usa o alinhamento padrão.
+  - `fig.align = "left"`: Alinha à esquerda.
+  - `fig.align = "center"`: Centraliza a figura.
+  - `fig.align = "right"`: Alinha à direita.
+
+- **`cache`**: Define se os resultados do chunk são armazenados em cache.
+  - `cache = FALSE` (padrão): Não armazena em cache.
+  - `cache = TRUE`: Armazena os resultados em cache para acelerar a compilação futura.
+
+- **`tidy`**: Controla se o código R deve ser formatado automaticamente antes de ser exibido.
+  - `tidy = FALSE` (padrão): Não formata automaticamente.
+  - `tidy = TRUE`: Formata o código automaticamente.
+
+- **`collapse`**: Controla se múltiplas linhas de código e suas saídas devem ser colapsadas em uma única linha no output.
+  - `collapse = FALSE` (padrão): As linhas são separadas.
+  - `collapse = TRUE`: As linhas de código e suas saídas são colapsadas em uma única linha.
+
+### Exemplos de Uso
+
+Aqui estão alguns exemplos de chunks com diferentes configurações:
+
+1. **Exibir código e resultado, mas suprimir mensagens:**
+
+    ```markdown
+    ```{r, message = FALSE}
+    print("Hello, world!")
+    message("This is a message.")
+    ```
+    ```
+
+2. **Executar o código, mas não mostrar nem o código nem o resultado:**
+
+    ```markdown
+    ```{r, echo = FALSE, results = "hide"}
+    x <- 42
+    ```
+
+3. **Mostrar apenas o resultado, sem mostrar o código:**
+
+    ```markdown
+    ```{r, echo = FALSE}
+    plot(cars)
+    ```
+
+4. **Alinhar uma figura ao centro com largura e altura específicas:**
+
+    ```markdown
+    ```{r, fig.align = "center", fig.width = 6, fig.height = 4}
+    plot(pressure)
+    ```
+
+### Configurações Globais
+
+Se você deseja aplicar configurações padrão a todos os chunks no seu documento, pode definir as opções globais com `knitr::opts_chunk$set()`. Isso é geralmente feito no início do arquivo `.Rmd`:
+
+```markdown
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)

@@ -1,30 +1,25 @@
-```{r Dados Ficticios}
-source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
-df
+```{r Carregando base de dados}
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/executar_sempre.R')
+df = dff
 ```
 
 ```{r Bibliotecas usadas}
-espacamento = '###########'
 library(tidyr) #manipulação de dados #pivot_longer
-library(tibble) #manipulação de dados
-library(broom) #tem a ver com a bibli tidy()
+library(tibble)
+library(broom)
 ```
 
 
 ```{r Analise Grafica Rapida}
-conti_grafi(df, 'desfecho', 'tratamentos')
-
-box_vin_jit(df, 'var_num', 'desfecho')
-
-box_vin_jit(df, 'var_num', 'tratamentos')
+# source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/executar_sempre.R')
+# 
+# conti_grafi(df, 'desfecho', 'tratamentos')
+# 
+# box_vin_jit(df, 'var_num', 'desfecho')
+# 
+# box_vin_jit(df, 'var_num', 'tratamentos')
 ```
 
-
-```{r Capturando niveis}
-niveis = df$desfecho %>% as.factor() %>% levels()
-grupo1 = df$var_num[df$desfecho == niveis[1]]
-grupo2 = df$var_num[df$desfecho == niveis[2]]
-```
 
 # Numerica vs Categórica
 
@@ -33,19 +28,72 @@ grupo2 = df$var_num[df$desfecho == niveis[2]]
 ### Parametrico
 
 ```{r Teste de Hipotese: Teste T; Post Hoc: D'Cohen}
-t.test(df$var_num ~ df$desfecho)
-
-cohen.d(grupo1, grupo2)
+t.test(df$idade~df$genero)
+cohen.d(df$idade~df$genero)
 ```
+```{r Teste de Homogenidade}
+# Padrão
+bartlett.test(df$idade ~ df$genero) # mais sensibilidade e potência em detectar diferenças de variâncias
+
+# Levene
+car::leveneTest(df$idade ~ df$genero) # não é tão sensivel a desvio de normalidade quanto bartlett, porém ainda tem o pressuposto
+
+# Teste F de Fisher
+var.test(df$idade ~ df$genero)
+```
+
+```{r Outros tipos de teste t}
+# Aplicando o Welch t-test
+t.test(df$idade ~ df$genero, var.equal = FALSE)
+
+# Aplicando o Yuen-Welch t-test com 20% de aparagem - horrivel
+pacman::p_load(WRS2)
+WRS2::yuen(df$idade ~ df$genero, tr = 0.2)
+
+# Aplicando o permutation t-test
+pacman::p_load(coin) # esse pacote tem algumas funções muito interessantes
+coin::oneway_test(df$idade ~ df$genero, distribution = "approximate")
+
+# https://chatgpt.com/c/a85bd99c-d35e-4013-b697-4fc5ad000a9e
+```
+
 
 ### Não Parametrico
 
 ```{r Teste de hipotese: Mann Whitney / Wilcox | Post Hoc: Hodges Lehmann}
 # Mann Whitney
-wilcox.test(grupo2, grupo1, conf.int = T, paired = F)
+wilcox.test(df$idade ~ df$genero, conf.int = T)
 
 # Wilcox Paired
-wilcox.test(grupo2, grupo1, conf.int = T, paired = T)
+#wilcox.test(df$idade~df$genero, conf.int = T, paired = T)
+```
+
+```{r Testes de homogenidade}
+# Teste de Brown-Forsythe
+car::leveneTest(df$idade ~ df$genero, center=median) # variação do teste de Levene porém Usando a mediana
+
+# Teste de Fligner-Killeen
+fligner.test(df$idade ~ df$genero) # tem alta robustez contra outliers
+```
+
+
+```{r Mann Whitney ajustado com ajuste das permutações de Fisher-Pitman}
+# Mann Whitney ajustado com ajuste das permutações de Fisher-Pitman
+coin::wilcox_test(df$idade ~ df$genero, conf.int = T)
+
+coin::median_test(df$idade ~ df$genero)
+wilcox.test(df$idade ~ df$genero, conf.int = T)
+```
+# Outros Testes de hipotese com ajuste de permutações de Fisher-Pitman do pacote *coin*
+
+```{r}
+# Testes de hipotese com ajuste de permutações de Fisher-Pitman
+coin::independence_test(df$idade ~ df$genero)
+coin::oneway_test(df$idade ~ df$genero)
+coin::wilcox_test(df$idade ~ df$genero, conf.int = T)
+coin::normal_test(df$idade ~ df$genero)
+coin::median_test(df$idade ~ df$genero)
+coin::savage_test(df$idade ~ df$genero)
 ```
 
 
@@ -54,76 +102,32 @@ wilcox.test(grupo2, grupo1, conf.int = T, paired = T)
 ### Parametricos
 
 ```{r Teste de Hipotese: Anova}
-library(multcomp)
-
-teste_hip = aov(var_num ~ tratamentos, data=df)
-teste_hip
-
-espacamento 
-
-summary(teste_hip)
-
-# teste_hip_summary = summary(teste_hip)
-# valor_p = teste_hip_summary[[1]][["Pr(>F)"]][1] %>% retorne_p() %>% retorne_p_ajust()
-# valor_p
+aov(var_num ~ tratamentos, data=df) %>% summary()
 ```
 
 ```{r Dunnet}
-dunnett_test = glht(teste_hip, linfct = mcp(tratamentos = "Dunnett"))
-dunnett_test
-
-espacamento 
-
-pos_teste = summary(dunnett_test)
-pos_teste
-
-# tabela = pos_teste$test[["pvalues"]]
-# p_ab = tabela[1] %>% retorne_p()
-# p_ac = tabela[2] %>% retorne_p()
+multcomp::glht(teste_hip, linfct = mcp(tratamentos = "Dunnett")) %>% summary()
 ```
 
 ```{r Tukey}
-pos_teste = TukeyHSD(teste_hip)
-pos_teste
-
-# tabela = pos_teste
-# p_ab = tabela$tratamentos[10] %>% retorne_p()
-# p_ac = tabela$tratamentos[11] %>% retorne_p()
-# p_bc = tabela$tratamentos[12] %>% retorne_p()
-# valores_p_pos_teste = data.frame(A_B = p_ab, A_C = p_ac, B_C = p_bc)
-# valores_p_pos_teste
+TukeyHSD(teste_hip)
 ```
 
 ### Não Parametricos
 
 ```{r Teste de hipotese: Kruskal Wallis}
-teste_hip = kruskal.test(var_num ~ tratamentos, data=df)
-teste_hip
+kruskal.test(var_num ~ tratamentos, data=df)
 ```
 
 
 ```{r Dunn}
-library(dunn.test)
-
-pos_teste = dunn.test(df$var_num, df$tratamentos, method="bonferroni")
-pos_teste
-
-# tabela = pos_teste$P.adjusted
-# p_ab = tabela[1] %>% retorne_p()
-# p_bc = tabela[3] %>% retorne_p()
-# p_ac = tabela[2] %>% retorne_p()
+dunn.test::dunn.test(df$var_num, df$tratamentos, method="bonferroni")
 ```
 
 
 ```{r Bonferroni}
 #qualquer teste
-pos_teste = pairwise.t.test(df$var_num, df$tratamentos, p.adjust.method = "bonferroni", data=df)
-pos_teste
-
-# tabela = pos_teste
-# p_ab = tabela$p.value[1] %>% retorne_p()
-# p_bc = tabela$p.value[3] %>% retorne_p()
-# p_ac = tabela$p.value[2] %>% retorne_p()
+pairwise.t.test(df$var_num, df$tratamentos, p.adjust.method = "bonferroni", data=df)
 ```
 
 ### Pareado
@@ -141,23 +145,18 @@ df_filter
 ```
 
 ```{r Teste de hipotese: Friedman}
-
 friedman.test(df_filter_matrix)
-
 ```
 
 ```{r Nemenyi}
-library(PMCMRplus)
-
-pos_teste = frdAllPairsNemenyiTest(df_filter_matrix)
-pos_teste %>% summary()
+PMCMRplus::frdAllPairsNemenyiTest(df_filter_matrix) %>% summary()
 ```
 
 ### Linear Mixed Effect Model
 
 ```{r Grafico}
-box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento')
-box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
+# box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento')
+# box_pareado(df[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
 ```
 
 ```{r organizando os dados - formato longo}
@@ -196,44 +195,44 @@ library(pander)
 ```{r aplicando modelo: intereção apenas com intercepto}
 
 # primeiro modelo teste 
-modelo = lmer(medida_numerica ~ momentos + (1|ID), data= dados_long, REML=F)
-metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+modelo = lmerTest::lmer(medida_numerica ~ momentos + (1|ID), data= dados_long, REML=F)
+statgsa::lm_model_eval(modelo) %>% round(2)
+summary(modelo)
 
 # segundo modelo teste
-modelo = lmer(medida_numerica ~ momentos * tratamentos + (1|ID), data= dados_long, REML=F)
-metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+modelo = lmerTest::lmer(medida_numerica ~ momentos * tratamentos + (1|ID), data= dados_long, REML=F)
+statgsa::lm_model_eval(modelo) %>% round(2)
 summary(modelo)
 
 # terceiro modelo teste # MODELO ESCOLHIDO
-modelo = lmer(medida_numerica ~ inter_ + (1|ID), data= dados_long, REML=F)
-metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
+modelo = lmerTest::lmer(medida_numerica ~ inter_ + (1|ID), data= dados_long, REML=F)
+statgsa::lm_model_eval(modelo) %>% round(2)
 summary(modelo)
 
-summary(modelo)
-post_hoc = glht(modelo, linfct = mcp(inter_ = "Tukey", interaction_average=TRUE)) # Post test do modelo
-summary(post_hoc)
-confint(post_hoc)
+post_hoc = multcomp::glht(modelo, linfct = mcp(inter_ = "Tukey", interaction_average=TRUE))
+post_hoc %>% summary()
+post_hoc %>% confint()
 
 ```
 
 ```{r aplicando modelo: intereção com intercepto e inclinação}
 
 # primeiro modelo teste 
-modelo = lmer(medida_numerica ~ momentos + (momentos|ID), data= dados_long, REML=F)
+modelo = lmerTest::lmer(medida_numerica ~ momentos + (momentos|ID), data= dados_long, REML=F)
 metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
 
 # segundo modelo teste
-modelo = lmer(medida_numerica ~ momentos * tratamentos + (1|ID), data= dados_long, REML=F)
+modelo = lmerTest::lmer(medida_numerica ~ momentos * tratamentos + (1|ID), data= dados_long, REML=F)
 metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
 summary(modelo)
 
 # terceiro modelo teste # MODELO ESCOLHIDO
-modelo = lmer(medida_numerica ~ inter_ + (1|ID), data= dados_long, REML=F)
+modelo = lmerTest::lmer(medida_numerica ~ inter_ + (1|ID), data= dados_long, REML=F)
 metricas_de_avaliacao_regressao(dados_long, modelo, 'medida_numerica')
 summary(modelo)
 
 summary(modelo)
-post_hoc = glht(modelo, linfct = mcp(inter_ = "Tukey", interaction_average=TRUE)) # Post test do modelo
+post_hoc = multcomp::glht(modelo, linfct = mcp(inter_ = "Tukey", interaction_average=TRUE)) # Post test do modelo
 summary(post_hoc)
 confint(post_hoc)
 
@@ -241,7 +240,7 @@ confint(post_hoc)
 
 
 ```{r}
-summary_numerico_por_grupo_parametrico(df, 'momento_1', 'tratamentos')
+statgsa::summary_num_parametric_groups(df, 'momento_1', 'tratamentos')
 df %>% group_by(tratamentos) %>% summarise(media = mean(momento_1))
 ```
 
@@ -272,21 +271,14 @@ teste_hip = chisq.test(df$desfecho, df$tratamentos)
 # Valores observados
 teste_hip$observed
 
-espacamento 
-
 # Valores esperados
 teste_hip$expected
-
-espacamento 
 
 # Resíduos
 teste_hip$residuals
 
-espacamento 
-
 # Resíduos padronizados
 teste_hip$stdres
-
 ```
 
 
@@ -298,15 +290,14 @@ exp(cbind(OR=coef(glm_model), confint(glm_model))) %>% round(2)
 # predict(glm_model, type="response") # predicted values
 # residuals(glm_model, type="deviance") # residuals
 
-library(multcomp)
 # Realizar comparações múltiplas
-comp = glht(glm_model, linfct = mcp(tratamentos = "Tukey"))
+comp = multcomp::glht(glm_model, linfct = mcp(tratamentos = "Tukey"))
 
 # Tabela com Multicomparações - Post Hoc
-summary(comp)
+comp %>% summary()
 
 # Tabela o intervalos de confiança
-confint(comp)
+comp %>% confint()
 ```
 
 
@@ -316,11 +307,8 @@ library(rcompanion)
 tabela = table(df$desfecho, df$tratamentos)
 
 # Tabela com Multicomparações - Post Hoc
-pos_teste = pairwiseNominalIndependence(tabela,
-                                        fisher = FALSE,
-                                        gtest  = FALSE,
-                                        chisq  = TRUE,
-                                        method = "holm")
+pos_teste = rcompanion::pairwiseNominalIndependence(tabela, fisher = FALSE,
+                                                    gtest  = FALSE, chisq  = TRUE, method = "holm")
 pos_teste
 
 # pos_teste = apply_retorne_p(pos_teste, "p.Chisq")

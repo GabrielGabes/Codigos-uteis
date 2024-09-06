@@ -270,7 +270,6 @@ retorne_p_ajust(pval_string(0.04))
 
 
 ```{r Densidade, Teste de Normalidade}
-
 teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T){
   media = mean(df[[coluna]], na.rm=T)
   desvpad = sd(df[[coluna]], na.rm=T)
@@ -293,18 +292,27 @@ teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T
                    colour = lista_cor1[cor_esc]) +
     geom_density(lwd = 1.2, linetype = 2, colour = lista_cor2[cor_esc]) +
     geom_function(fun= dnorm, args=list(mean=media,sd=desvpad), col='black', lwd=1, lty=4) +
-    labs(x=NULL, y='Probability Density', subtitle = subtitulo) +
+    labs(subtitle = 'Distribution Density', x='Values', y='Probability Density') +
     theme_minimal()
   
   if (plot_qqplot == T){
     p2 = ggplot(data = df, aes(sample = !!sym(coluna))) +
-    stat_qq(shape=21, size=2.5, fill=lista_cor0[cor_esc], alpha = 0.5) + 
-    stat_qq_line() +
-    labs(subtitle = '', x = 'Theoretical Quantiles', y = NULL) + #'Standardized Residuals'
-    theme_minimal()
-    return((p1+p2))
+      stat_qq(shape=21, size=2.5, fill=lista_cor0[cor_esc], alpha = 0.5) +
+      stat_qq_line() +
+      labs(subtitle = 'QQPlot', x = 'Theoretical Quantiles', y = 'Sample Quantiles') +
+      theme_minimal()
+    
+    # Combinar os gráficos com um título geral
+    combined_plot <- p1+p2 + 
+      plot_annotation(subtitle = subtitulo, 
+                      theme = theme(
+                        plot.title = element_text(hjust = 0.5),
+                        plot.subtitle = element_text(hjust = 0.5)
+                        )
+                      )
+    return(combined_plot)
   } else {
-    return(p1)
+    return(p1 + labs(title = subtitulo))
   }
 }
 
@@ -313,9 +321,8 @@ teste_normalidade(dff, 'var_num', cor_esc = 2) #+ facet_grid(~desfecho) + labs(s
 teste_normalidade(dff, 'var_num', cor_esc = 3) #+ facet_grid(tratamentos~.) + labs(subtitle = NULL)
 teste_normalidade(dff, 'var_num', cor_esc = 4)
 teste_normalidade(dff, 'var_num', cor_esc = 5)
-teste_normalidade(dff, 'var_num', cor_esc = 6) 
+teste_normalidade(dff, 'var_num', cor_esc = 6) + plot_annotation(title = 'teste')
 ```
-
 
 
 ```{r Grafico de diagnostico de modelos lineares}

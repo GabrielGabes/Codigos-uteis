@@ -108,7 +108,7 @@ skim(df)
 ```{r Resumo dos dados com pacote dplyr}
 library(dplyr)
 
-glimpse(df)
+glimpse(dff)
 ```
 # Tratamentos Iniciais do banco
 
