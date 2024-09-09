@@ -1,0 +1,27 @@
+```{r}
+# Duas amostras de exemplo
+n = 200
+grupo1 <- rnorm(n, 60, 20)
+grupo2 <- rnorm(n, 40, 20)
+
+# Calculando todas as diferenças entre os pares de observações
+diff_pares <- outer(grupo1, grupo2, FUN = "-")
+diff_pares <- as.vector(diff_pares)
+
+# Calculando a mediana e o IQR (Q1 e Q3) das diferenças
+mediana <- median(diff_pares) %>% round(5)
+q1 <- quantile(diff_pares, 0.25) %>% round(3)
+q3 <- quantile(diff_pares, 0.75) %>% round(3)
+paste0(mediana, ' [', q1, ' ; ', q3, ']')
+
+# Calculando a media e o desvio padrão das diferenças
+media <- mean(diff_pares) %>% round(3)
+desv_pad <- sd(diff_pares) %>% round(3)
+paste0(media, ' (', desv_pad, ')')
+paste0(media, ' [', (media-desv_pad) %>% round(2), ' ; ', (media+desv_pad) %>% round(2), ']')
+
+wilcox.test(grupo1, grupo2, conf.int = T)
+
+
+```
+

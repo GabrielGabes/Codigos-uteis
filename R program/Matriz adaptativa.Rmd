@@ -14,6 +14,7 @@ chart.Correlation(dff[sapply(dff, is.numeric)], histogram=TRUE, pch=19)
 ```{r}
 cor.test(dff$idade, dff$peso, use = "complete.obs") #%>% tidy() %>% .$p.value %>% pval_string()
 ```
+
 ```{r}
 cor.hip = function(x, y, rho_null = 0.5, use = 'everything', method = 'pearson'){
   cor_obs = cor(x, y, use = use, method = method)
@@ -44,38 +45,51 @@ cor.hip(dff$idade, dff$peso)
 ```
 
 
-
 ```{r}
 teste_num_cat = function(df, col_num, col_cat){
-
+  
   qtd_levels = length(levels(as.factor(df[[col_cat]])))
   
-  if ( group_normality_test(df, col_num, col_cat, 1) ){
-    if ( qtd_levels <= 2 ){
+  if (qtd_levels <= 2) {
+    # A lógica existente para 2 categorias permanece a mesma
+    if (group_normality_test(df, col_num, col_cat, 1)){
       formula = formula(paste0(col_num, '~', col_cat))
       
-      # Verificando homogenidade
+      # Teste de homogeneidade para 2 grupos
       teste_homogeneidade = bartlett.test(formula, df)
-      # h0 = as varianças são homogeneas
       
       if (teste_homogeneidade$p.value > 0.05){
         teste_usado = "Student's t-test"
-        pvalor = t.test(df[[col_num]]~df[[col_cat]], var.equal=T)$p.value
+        pvalor = t.test(df[[col_num]] ~ df[[col_cat]], var.equal = TRUE)$p.value
       } else {
         teste_usado = "Welch's t-test"
-        pvalor = t.test(df[[col_num]]~df[[col_cat]], var.equal=F)$p.value
+        pvalor = t.test(df[[col_num]] ~ df[[col_cat]], var.equal = FALSE)$p.value
       }
-    } else{
-      pvalor = summary(aov(df[[col_num]]~df[[col_cat]]))[[1]][["Pr(>F)"]][1]  
-      teste_usado = "Anova"
-    }
-  } else{
-    if ( qtd_levels > 2 ){
-      pvalor = kruskal.test(df[[col_num]]~df[[col_cat]])$p.value
-      teste_usado = "Kruskal-Wallis"
-    } else{
-      pvalor = wilcox.test(df[[col_num]]~df[[col_cat]])$p.value
+    } else {
+      pvalor = wilcox.test(df[[col_num]] ~ df[[col_cat]])$p.value
       teste_usado = "Mann-Whitney"
+    }
+  } else {
+    # Quando houver mais de 2 categorias
+    formula = formula(paste0(col_num, '~', col_cat))
+    
+    if (group_normality_test(df, col_num, col_cat, 1)){
+      # Verificando homogeneidade para mais de 2 grupos
+      teste_homogeneidade = bartlett.test(formula, df)
+      
+      if (teste_homogeneidade$p.value > 0.05){
+        # Variâncias homogêneas -> ANOVA
+        pvalor = summary(aov(df[[col_num]] ~ df[[col_cat]]))[[1]][["Pr(>F)"]][1]
+        teste_usado = "One-way ANOVA"
+      } else {
+        # Variâncias heterogêneas -> Welch ANOVA (Omnibus)
+        pvalor = oneway.test(df[[col_num]] ~ df[[col_cat]], var.equal = FALSE)$p.value
+        teste_usado = "Welch's ANOVA"
+      }
+    } else {
+      # Se a normalidade não for atendida -> Kruskal-Wallis
+      pvalor = kruskal.test(df[[col_num]] ~ df[[col_cat]])$p.value
+      teste_usado = "Kruskal-Wallis"
     }
   }
   
@@ -83,8 +97,182 @@ teste_num_cat = function(df, col_num, col_cat){
        test = teste_usado)
 }
 
-teste_num_cat(dff, 'desfecho_num', 'desfecho')$p.value
+
+teste_num_cat(dff, 'desfecho_num', 'asa')
+
+n = 100
+cat3 = c(rep("A", n), rep("B", n), rep('C', n))
+filtro_A = cat3 == "A"
+filtro_B = cat3 == "B"
+filtro_C = cat3 == "C"
+df = data.frame(cat3 = cat3)
+df$numerica = NA
+df$numerica[filtro_A] = rnorm(n, mean = 10, sd = 20)
+df$numerica[filtro_B] = rnorm(n, mean = 30, sd = 40)
+#df$numerica[filtro_C] = rpois(n, 40)
+df$numerica[filtro_C] = runif(n)
+teste_num_cat(df, 'numerica', 'cat3')
 ```
+
+```{r}
+
+col_num = coluna2
+col_cat = 'grupo'
+group_normality_test <- function(df, col_num, col_cat, type_response = 0) {
+
+  # Perform the Kolmogorov-Smirnov test for each group
+  resultados <- by(df[[col_num]], df[[col_cat]], function(subset) {
+    ks.test(subset, "pnorm", mean(subset, na.rm=T), sd(subset, na.rm=T))
+  })
+
+  # Extract p-values
+  p_values <- sapply(resultados, function(test) test$p.value)
+
+  # Check if any p-values indicate non-normality
+  verificacao <- any(p_values < 0.05)
+
+  tabela = data.frame(group = names(p_values), p_value = p_values)
+  rownames(tabela) = NULL
+
+  colnames(tabela) <- c(col_cat, "p_value")  # Rename columns for clarity
+
+  # Return the results based on the type_response parameter
+  if (type_response == 0) {
+    return(tabela)
+  } else if (type_response == 1) {
+    # At least one distribution does not follow normality
+    # All distributions follow normality
+    return(verificacao)
+  }
+}
+group_ks_test(df, coluna2, 'grupo', 0)
+bartlett.test(df$tempo_ps2, df$grupo)
+```
+
+
+
+```{r}
+library(coin)
+
+
+teste_num_cat = function(df, col_num, col_cat){
+
+  qtd_levels = length(levels(as.factor(df[[col_cat]])))
+  tam_grupos = table(df[[col_cat]])
+  
+  # Verifica se algum grupo tem tamanho menor que 30
+  usa_permutacao = any(tam_grupos < 30)
+  
+  if (qtd_levels <= 2) {
+    # A lógica existente para 2 categorias permanece a mesma
+    if (group_normality_test(df, col_num, col_cat, 1)){
+      formula = formula(paste0(col_num, '~', col_cat))
+      
+      # Teste de homogeneidade para 2 grupos
+      teste_homogeneidade = bartlett.test(formula, df)
+      
+      if (teste_homogeneidade$p.value > 0.05){
+        if (usa_permutacao) {
+          # Aplica teste de permutação de Fisher-Pitman se algum grupo tiver n < 30
+          teste_usado = "Fisher-Pitman t-test (coin::independence_test)"
+          pvalor = coin::independence_test(df[[col_num]] ~ df[[col_cat]])$p.value
+        } else {
+          # Teste t de Student padrão
+          teste_usado = "Student's t-test"
+          pvalor = t.test(df[[col_num]] ~ df[[col_cat]], var.equal = TRUE)$p.value
+        }
+      } else {
+        if (usa_permutacao) {
+          # Aplica teste de permutação ajustado para variância desigual
+          teste_usado = "Fisher-Pitman Welch's t-test (coin::oneway_test)"
+          pvalor = coin::oneway_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
+        } else {
+          # Teste t de Welch padrão
+          teste_usado = "Welch's t-test"
+          pvalor = t.test(df[[col_num]] ~ df[[col_cat]], var.equal = FALSE)$p.value
+        }
+      }
+    } else {
+      if (usa_permutacao) {
+        # Aplica teste de permutação equivalente a Wilcoxon
+        teste_usado = "Wilcoxon test with permutation (coin::wilcox_test)"
+        pvalor = coin::wilcox_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
+      } else {
+        # Teste de Mann-Whitney (Wilcoxon para 2 amostras)
+        teste_usado = "Mann-Whitney"
+        pvalor = wilcox.test(df[[col_num]] ~ df[[col_cat]])$p.value
+      }
+    }
+  } else {
+    # Quando houver mais de 2 categorias
+    formula = formula(paste0(col_num, '~', col_cat))
+    
+    if (group_normality_test(df, col_num, col_cat, 1)){
+      # Verificando homogeneidade para mais de 2 grupos
+      teste_homogeneidade = bartlett.test(formula, df)
+      
+      if (teste_homogeneidade$p.value > 0.05){
+        if (usa_permutacao) {
+          # Aplica teste de permutação ANOVA
+          teste_usado = "Fisher-Pitman ANOVA (coin::independence_test)"
+          pvalor = coin::independence_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
+        } else {
+          # ANOVA padrão
+          pvalor = summary(aov(df[[col_num]] ~ df[[col_cat]]))[[1]][["Pr(>F)"]][1]
+          teste_usado = "One-way ANOVA"
+        }
+      } else {
+        if (usa_permutacao) {
+          # Aplica Welch ANOVA ajustado para permutação
+          teste_usado = "Welch's ANOVA with permutation (coin::oneway_test)"
+          pvalor = coin::oneway_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
+        } else {
+          # Welch ANOVA padrão
+          pvalor = oneway.test(df[[col_num]] ~ df[[col_cat]], var.equal = FALSE)$p.value
+          teste_usado = "Welch's ANOVA"
+        }
+      }
+    } else {
+      if (usa_permutacao) {
+        # Aplica teste de Kruskal-Wallis com permutação
+        teste_usado = "Kruskal-Wallis with permutation (coin::independence_test)"
+        pvalor = coin::independence_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
+      } else {
+        # Kruskal-Wallis padrão
+        pvalor = kruskal.test(df[[col_num]] ~ df[[col_cat]])$p.value
+        teste_usado = "Kruskal-Wallis"
+      }
+    }
+  }
+  
+  list(p.value = pvalor, 
+       test = teste_usado)
+}
+
+
+
+n = 100
+cat3 = c(rep("A", n), rep("B", n), rep('C', 29))
+filtro_A = cat3 == "A"
+filtro_B = cat3 == "B"
+filtro_C = cat3 == "C"
+df = data.frame(cat3 = cat3)
+
+df$numerica = NA
+df$numerica[filtro_A] = rnorm(n, mean = 10, sd = 20)
+df$numerica[filtro_B] = rnorm(n, mean = 30, sd = 40)
+#df$numerica[filtro_C] = rnorm(29, mean = 30, sd = 40)
+df$numerica[filtro_C] = rpois(29, 40)
+#df$numerica[filtro_C] = runif(29)
+
+col_cat = 'cat3'
+col_num = 'numerica'
+df$cat3 = as.factor(df$cat3)
+teste_num_cat(df, 'numerica', 'cat3')
+
+```
+
+
 
 ```{r}
 library(dplyr)

@@ -1,29 +1,31 @@
+---
+title: "Meu Próprio Pacote"
+author: "Gabriel Silva Dos Anjos"
+date: "2024-08-12"
+output: html_document
+---
+
 
 ``` r
 pacman::p_load(
 dplyr, # manipulação de dados
 magrittr, # operador pipe line %>%
 janitor, # tabela de contigencia => tabyl, adorn_pct_formatting, adorn_totals, adorn_percentages, adorn_ns
-clipr, # captura dos dados => write_clip
-effsize, # tamanho do efeito d'cohen
-RVAideMemoire # shapiro por grupo ==> byf.shapiro(numerico~categorico, df)
+effsize # tamanho do efeito d'cohen
 )
 ```
 
 
-
 ``` r
-library(clipr)
+pacman::p_load(clipr) # captura dos dados => write_clip
 capture = function(tabela, col_names=TRUE, pontuacao=','){
   tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
 }
 ```
 
-# Valor de P
-
 
 ``` r
-retorne_p = function(valor){
+retorne_p = function(valor){ 
   valor_str = formatC(valor, format = "f", digits = 6)
   if (valor < 0.05){
     if (valor < 0.001 || valor == 0){"< 0.001"}
@@ -165,7 +167,6 @@ apply_retorne_p = function(df, coluna) {
 }
 ```
 
-# Arredondamento
 
 
 ``` r
@@ -362,14 +363,8 @@ cont = function(df, variavel){
     adorn_pct_formatting(2) %>% as.data.frame()
 }
 
-cont(df, 'desfecho')
-```
+cont(dff, 'desfecho')
 
-```
-## Error in tabyl.default(., .data[[variavel]], show_na = FALSE): input must be a vector of type logical, numeric, character, list, or factor
-```
-
-``` r
 tabelinha_ajust = function(tabelinha){
   nomes_colunas = colnames(tabelinha)
   linha_nomes_colunas = as.data.frame(t(nomes_colunas), stringsAsFactors = FALSE)
@@ -454,16 +449,43 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
   return(tabela %>% as.data.frame())
 }
 
-conti(df, "desfecho", "tratamentos")
-```
-
-```
-## Error in tabyl.default(., .data[[var_x]], .data[[var_y]], show_na = FALSE): input must be a vector of type logical, numeric, character, list, or factor
+conti(dff, "desfecho", "tratamentos")
 ```
 
 
 
 ``` r
+# Maneira antiga
+# library(RVAideMemoire) # shapiro por grupo ==> byf.shapiro(numerico~categorico, df)
+# esse pacote é bom procurar saber mais dps, contem teste de levene | comparações múltiplas usando o teste t de Student com correção para múltiplos testes (pairwise.t.test) | ANOVA ajustada para heterocedasticidade (anova.hetero())
+# normalidade_por_grupo_shapiro = function(df, col_num, col_cat){
+#   tabela = byf.shapiro(df[[col_num]]~df[[col_cat]])$tab
+#   resultados = tabela$`p-value`
+#   verificacao = any(resultados < 0.05)
+#   
+#   if (verificacao){ 
+#     return(FALSE) # Alguma distribuição não segue a normal
+#   } else{
+#     return(TRUE)} # Todas as distribuições seguem a normal
+# }
+
+# Maneira Nova
+
+shapiro_test <- function(x) {
+    return(shapiro.test(x)$p.value)
+}
+
+normalidade_por_grupo_shapiro = function(df, col_num, col_cat){
+  tabela = aggregate(df[[col_num]]~df[[col_cat]], data=df, shapiro_test) 
+  resultados = tabela$`p-value`
+  verificacao = any(resultados < 0.05)
+  
+  if (verificacao){ 
+    return(FALSE) # Alguma distribuição não segue a normal
+  } else{
+    return(TRUE)} # Todas as distribuições seguem a normal
+}
+
 normalidade_por_grupo_ks = function(df, col_num, col_cat){
   resultados <- by(df[[col_num]], df[[col_cat]], function(subset) {
     ks.test(subset, "pnorm", mean(subset), sd(subset))
@@ -477,17 +499,6 @@ normalidade_por_grupo_ks = function(df, col_num, col_cat){
   } else {
     return(TRUE)  # Todas as distribuições seguem a normal
   }
-}
-
-normalidade_por_grupo_shapiro = function(df, col_num, col_cat){
-  tabela = byf.shapiro(df[[col_num]]~df[[col_cat]])$tab
-  resultados = tabela$`p-value`
-  verificacao = any(resultados < 0.05)
-  
-  if (verificacao){ 
-    return(FALSE) # Alguma distribuição não segue a normal
-  } else{
-    return(TRUE)} # Todas as distribuições seguem a normal
 }
 
 normalidade_por_grupo_criterio = function(df, col_num, col_cat){
@@ -523,14 +534,8 @@ summary_numerico_parametrico = function(df, col_num){
   return(tabela)
 }
 
-summary_numerico_parametrico(df, 'var_num')
-```
+summary_numerico_parametrico(dff, 'var_num')
 
-```
-## Error in UseMethod("filter"): método não aplicável para 'filter' aplicado a um objeto de classe "function"
-```
-
-``` r
 library(effsize) #tamanho do efeito d'cohen
 
 summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_extra="F"){
@@ -540,11 +545,11 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
     group_by(!!sym(col_cat)) %>%
     summarise(
       resumo = paste0(
-        sprintf("%.2f", round(mean(!!sym(col_num), na.rm = TRUE), 2)), 
-        " ± ", sprintf("%.2f", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2))
+        round(mean(!!sym(col_num), na.rm = TRUE), 2), 
+        #" ± ", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2)
+        " (", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2), ")")
       )
-    )
-  sumario_grupo = rename(sumario_grupo, "coluna" = col_cat)
+  sumario_grupo <- rename(sumario_grupo, coluna = all_of(col_cat))
   
   # Sumário geral (total)
   sumario_geral = df %>%
@@ -552,10 +557,10 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
     summarise(
       coluna = 'Total',
       resumo = paste0(
-        sprintf("%.2f", round(mean(!!sym(col_num), na.rm = TRUE), 2)), 
-        " ± ", sprintf("%.2f", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2))
+        round(mean(!!sym(col_num), na.rm = TRUE), 2), 
+        #" ± ", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2)
+        " (", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2), ")")
       )
-    )
   
   sumario_final = rbind(sumario_geral, sumario_grupo) # Combinar os sumários
   tabela = as.data.frame(t(sumario_final)) # Transpor o dataframe
@@ -598,12 +603,60 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
   return(tabela)  
 }
 # Exemplo de uso:
-summary_numerico_por_grupo_parametrico(df, "var_num", "desfecho", 'T')
+summary_numerico_por_grupo_parametrico(dff, "var_num", "desfecho", 'T')
+```
+
+
+``` r
+library(car)
+teste_homogeneidade = leveneTest(var_num ~ desfecho, dff, center=mean)
+teste_homogeneidade
 ```
 
 ```
-## Error in UseMethod("filter"): método não aplicável para 'filter' aplicado a um objeto de classe "function"
+## Levene's Test for Homogeneity of Variance (center = mean)
+##        Df F value Pr(>F)
+## group   1  0.1545 0.6948
+##       148
 ```
+
+``` r
+# h0 = as varianças são homogeneas
+
+if (teste_homogeneidade$`Pr(>F)`[1] > 0.05){
+  teste_usado = "Student's t-test"
+  t.test(var_num ~ desfecho, dff, var.equal = T)
+} else {
+  teste_usado = "Welch's t-test"
+  t.test(var_num ~ desfecho, dff, var.equal = F) # 
+}
+```
+
+```
+## 
+## 	Two Sample t-test
+## 
+## data:  var_num by desfecho
+## t = -2.0014, df = 148, p-value = 0.04718
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  -17.7273386  -0.1126614
+## sample estimates:
+## mean in group 0 mean in group 1 
+##           50.88           59.80
+```
+
+``` r
+print(teste_usado)
+```
+
+```
+## [1] "Student's t-test"
+```
+
+
+
+
 
 
 
@@ -632,10 +685,10 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
     group_by(!!sym(col_cat)) %>%
     summarise(
       resumo = paste0(
-        sprintf("%.2f", round(median(!!sym(col_num), na.rm = TRUE), 2)), 
-        " [", sprintf("%.2f", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2)), 
+        round(median(!!sym(col_num), na.rm = TRUE), 2),
+        " [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2), 
         " - ", 
-        sprintf("%.2f", round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2)),"]"
+        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2),"]"
       )
     )
   sumario_grupo = rename(sumario_grupo, "coluna" = col_cat)
@@ -646,10 +699,10 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
     summarise(
       coluna = 'Total',
       resumo = paste0(
-        sprintf("%.2f", round(median(!!sym(col_num), na.rm = TRUE), 2)), 
-        " [", sprintf("%.2f", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2)), 
+        round(median(!!sym(col_num), na.rm = TRUE), 2), 
+        " [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2), 
         " - ", 
-        sprintf("%.2f", round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2)),"]"
+        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2),"]"
       )
     )
   
@@ -694,11 +747,7 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
   return(tabela)  
 }
 
-summary_numerico_por_grupo_n_parametrico(df, "var_num", "desfecho", 'T')
-```
-
-```
-## Error in UseMethod("filter"): método não aplicável para 'filter' aplicado a um objeto de classe "function"
+summary_numerico_por_grupo_n_parametrico(dff, "var_num", "desfecho", 'T')
 ```
 
 
@@ -712,11 +761,7 @@ summary_numerico_por_grupo = function(df, col_num, col_cat){
   }
 }
 
-summary_numerico_por_grupo(df, "var_num", "desfecho")
-```
-
-```
-## Error in UseMethod("filter"): método não aplicável para 'filter' aplicado a um objeto de classe "function"
+summary_numerico_por_grupo(dff, "var_num", "desfecho")
 ```
 
 
@@ -798,11 +843,11 @@ analise_fisher = function(teste){
   valores = paste0(odds, " (", ic_0, " - ", ic_1, ")")
   return(valores)
 }
-analise_fisher(fisher.test(table(df$desfecho, df$genero), conf.int = TRUE))
+analise_fisher(fisher.test(table(dff$desfecho, dff$genero), conf.int = TRUE))
 ```
 
 ```
-## Error in df$desfecho: objeto de tipo 'closure' não possível dividir em subconjuntos
+## [1] "1.95 (0.96 - 4.03)"
 ```
 
 
@@ -896,5 +941,504 @@ adicionar_quebra_de_linha(frase_longa,50)
 
 ``` r
 #library(gmodels) #analise de residuo em tabelas de cruzamentos categorica - TESTE PÓS HOC (de qui-quadrado)
+```
+
+
+
+``` r
+library(caret)
+library(DescTools)
+library(car)
+library(pROC)
+library(MuMIn)
+
+metricas_de_avaliacao_glm = function(modelo){
+  data_df = model.frame(modelo)
+  
+  formula_modelo <- formula(modelo)
+  variavel_dependente <- as.character(formula_modelo[[2]])
+  vars_independentes <- as.character(formula_modelo[[3]])
+  
+  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+  vars_independentes_lista <- unlist(strsplit(vars_independentes, split = "\\+"))
+  
+  tryCatch({
+    # Previsões e dados reais
+    df_clean = data_df#[complete.cases(data_df[, c(variavel_dependente, vars_independentes_lista)]), ]
+    previsoes = predict(modelo, newdata = df_clean, type = "response")
+    
+    # Classificação binária das previsões
+    previsoes_bin = ifelse(previsoes > 0.5, 1, 0)
+    dados_reais = df_clean[[variavel_dependente]]
+    
+    # Metricas de Avaliação
+    matrix = caret::confusionMatrix(as.factor(previsoes_bin), as.factor(dados_reais), positive = "1")
+    acuracia = matrix$overall['Accuracy']
+    precisao = matrix$byClass['Pos Pred Value']
+    sensibilidade = matrix$byClass['Sensitivity']
+    especificidade = matrix$byClass['Specificity']
+    f1 = matrix$byClass['F1']
+    auc = pROC::roc(dados_reais, previsoes)$auc # Curva roc
+    
+    # Extração dos valores de TP, TN, FP, FN
+    tp = matrix$table[2, 2]
+    tn = matrix$table[1, 1]
+    fp = matrix$table[1, 2]
+    fn = matrix$table[2, 1]
+    
+    # Critério de informação de (AKAIKE/BAYESIANO)
+    aic = AIC(modelo)
+    bic = BIC(modelo)
+    
+    # MODELANDO ESPECIFICAÇÕES DO MODELO
+    if (inherits(modelo, "glm")) { # Modelo GLM
+      # Pseudo R²
+      pseudo_r2_McFadden = 1 - (modelo$deviance / modelo$null.deviance)
+      pseudo_r2_Nagelkerke = DescTools::PseudoR2(modelo, which = "Nagelkerke")
+      
+      # null_model <- glm(target ~ 1, data = dfTrain, family = binomial)
+      # pseudo_r2 <- 1 - logLik(model)/logLik(null_model)
+      # print(paste("Pseudo R²: ", pseudo_r2))
+      
+      # VIF (Variance inflation factor) - Multicolinearidade
+      if (length(vars_independentes_lista) > 1) {
+        VIF = any(car::vif(modelo) > 10) %>% as.numeric()
+      } else {
+        VIF = 0
+      }
+    
+      resultados = c(# tp=tp, tn=tn, fp=fp, fn=fn, 
+        acuracia, precisao, sensibilidade, especificidade, 
+        F1_Score = f1, AUC = auc,
+        Pseudo_R2.McFadden = pseudo_r2_McFadden, Pseudo_R2 = pseudo_r2_Nagelkerke,
+        AIC = aic, BIC = bic, VIF = VIF,
+        Status = 1
+      )
+      return(resultados)
+      
+    } else if (inherits(modelo, "glmerMod")) { # Modelo Generalizado **Misto**
+      warning("Você inseriu um modelo misto")
+      
+      # coeficiente de determinação condicional
+      R2M = MuMIn::r.squaredGLMM(modelo)[1]
+      # coeficiente marginal
+      R2c = MuMIn::r.squaredGLMM(modelo)[2]
+      
+      resultados = c(# tp=tp, tn=tn, fp=fp, fn=fn, 
+        acuracia, precisao, sensibilidade, especificidade, 
+        F1_Score = f1, AUC = auc,
+        R2M = R2M, R2c = R2c, 
+        AIC = aic, BIC = bic, #VIF = VIF,
+        Status = 1
+      )
+      return(resultados)
+      
+    } else {
+      warning("O modelo fornecido não é suportado. Use um modelo 'glm' ou 'lmerMod'.")
+      return(NULL)
+    }
+  }, error = function(e) {
+    print(paste0('Erro com o modelo: ', formula_texto))
+    return(c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0))
+  })
+}
+
+modelo = glm(desfecho ~ fixed_effects + group, data = dff, family = binomial())
+metricas_de_avaliacao_glm(modelo) %>% round(4)
+```
+
+```
+## Setting levels: control = 0, case = 1
+```
+
+```
+## Setting direction: controls < cases
+```
+
+```
+##             Accuracy       Pos Pred Value          Sensitivity          Specificity          F1_Score.F1                  AUC   Pseudo_R2.McFadden 
+##               0.6333               0.6613               0.5467               0.7200               0.5985               0.6587               0.0564 
+## Pseudo_R2.Nagelkerke                  AIC                  BIC                  VIF               Status 
+##               0.1002             208.2232             226.2870               0.0000               1.0000
+```
+
+``` r
+modelo_reduzido = glm(desfecho ~ fixed_effects, data = dff, family = binomial())
+metricas_de_avaliacao_glm(modelo_reduzido) %>% round(4)
+```
+
+```
+## Setting levels: control = 0, case = 1
+## Setting direction: controls < cases
+```
+
+```
+##             Accuracy       Pos Pred Value          Sensitivity          Specificity          F1_Score.F1                  AUC   Pseudo_R2.McFadden 
+##               0.5867               0.5915               0.5600               0.6133               0.5753               0.5778               0.0156 
+## Pseudo_R2.Nagelkerke                  AIC                  BIC                  VIF               Status 
+##               0.0285             208.7012             214.7224               0.0000               1.0000
+```
+
+``` r
+modelo_misto = glmer(desfecho ~ fixed_effects + (1|group), data=dff, family = binomial())
+metricas_de_avaliacao_glm(modelo_misto) %>% round(4)
+```
+
+```
+## Setting levels: control = 0, case = 1
+## Setting direction: controls < cases
+```
+
+```
+##       Accuracy Pos Pred Value    Sensitivity    Specificity    F1_Score.F1            AUC            R2M            R2c            AIC            BIC 
+##         0.6000         0.6027         0.5867         0.6133         0.5946         0.6434         0.0259         0.0215       209.9401       218.9721 
+##         Status 
+##         1.0000
+```
+
+``` r
+# Realizar o Teste de Deviance
+# library(MASS)
+# anova(modelo_reduzido, modelo, test = "Chisq")
+# anova(modelo_reduzido, modelo)
+
+# Teste de Hosmer-Lemeshow
+# library(ResourceSelection)
+# previsoes = predict(modelo, newdata = dff, type = "response")
+# previsoes_bin = ifelse(previsoes > 0.5, 1, 0)
+# hoslem.test(dff$desfecho, previsoes_bin, g = 10)
+
+# Avaliação do modelo
+# glm_diagnostic(modelo)
+# modelo %>% stdres() %>% summary() # residuos padronizados
+# Anova(modelo, type = 'II', test = "Wald") ## Overall effects
+# Anova(modelo)
+```
+
+
+
+``` r
+# library(lmerTest) # é melhor que library(lme4)
+# library(MuMIn)
+ # R quadrado para modelos mistos # 
+# R2m = proporção explica apenas pelas variaveis fixas 
+# R2c = proporção explica pelas variaveis fixas e aleatoria # R quadrado geral
+# r.squaredGLMM(modelo) #código de aplicação
+
+pacman::p_load(MuMIn, lmerTest)
+
+metricas_de_avaliacao_regressao = function(modelo){
+  data_df = model.frame(modelo)
+  
+  formula_modelo <- formula(modelo)
+  variavel_dependente <- as.character(formula_modelo[[2]])
+  vars_independentes <- as.character(formula_modelo[[3]])
+  
+  formula_texto = paste0(variavel_dependente, "~", vars_independentes)
+  vars_independentes_lista <- unlist(strsplit(vars_independentes, split = "\\+"))
+  
+  tryCatch({
+    # Previsões do modelo
+    predictions = predict(modelo)
+    
+    # MAE - Mean Absolute Error
+    MAE = mean(abs(data_df[[variavel_dependente]] - predictions))
+    
+    # MSE - Mean Squared Error
+    MSE = mean((data_df[[variavel_dependente]] - predictions)^2)
+    
+    # RMSE - Root Mean Squared Error
+    RMSE = sqrt(MSE)
+    
+    # MAPE - Mean Absolute Percentage Error
+    MAPE = mean(abs((data_df[[variavel_dependente]] - predictions) / data_df[[variavel_dependente]])) * 100
+
+    # Critério de informação de (AKAIKE/BAYESIANO)
+    aic = AIC(modelo)
+    bic = BIC(modelo)
+      
+    # MODELANDO ESPEFICAÇÕES DO MODELO
+    # Verificando qual é o modelo
+    if (inherits(modelo, "lm")) { # Modelo Linear
+      #warning("vc inseriu um modelo linear")
+      
+      # VIF (Variance inflation factor) - Multicolinearidade
+      # if (length(vars_independentes_lista) >= 2){
+      #   tryCatch({
+      #     VIF = any(car::vif(modelo) > 10) %>% as.numeric()
+      #     }, error = function(e) {
+      #       VIF = 1
+      #       })
+      # } else{ 
+      #   VIF = 0
+      # }
+      VIF = 0 
+      
+      # Summary do modelo
+      summary_LM = modelo %>% summary()
+      # R-quadrado (R²)
+      r_squared <- summary_LM$r.squared
+      # R-quadrado ajustado
+      r_squared_adj <- summary_LM$adj.r.squared
+    
+      resultados <- c(MAE = as.numeric(MAE), MSE = as.numeric(MSE), RMSE = as.numeric(RMSE), MAPE = as.numeric(MAPE), 
+                      AIC = as.numeric(aic), BIC = as.numeric(bic), 
+                      R2 = as.numeric(r_squared), R2_adj = as.numeric(r_squared_adj), 
+                      VIF = as.numeric(VIF),
+                      Status = 1)
+      return(resultados)
+    } else if (inherits(modelo, "lmerMod")) { # Modelo Linear **Misto**
+      #warning("vc inseriu um modelo linear misto")
+
+      # coeficiente de determinação condicional
+      R2M = MuMIn::r.squaredGLMM(modelo)[1]
+      # coeficiente marginal
+      R2c = MuMIn::r.squaredGLMM(modelo)[2]
+      
+      resultados <- c(MAE = as.numeric(MAE), MSE = as.numeric(MSE), RMSE = as.numeric(RMSE), MAPE = as.numeric(MAPE), 
+                      AIC = as.numeric(aic), BIC = as.numeric(bic), 
+                      R2M = as.numeric(R2M), R2c = as.numeric(R2c), 
+                      #VIF = as.numeric(VIF), 
+                      Status = 1)
+      return(resultados)
+    } else {
+      #warning("O modelo fornecido não é suportado. Use um modelo 'lm' ou 'lmerMod'.")
+      
+      resultados <- c(MAE = as.numeric(MAE), MSE = as.numeric(MSE), RMSE = as.numeric(RMSE), MAPE = as.numeric(MAPE), 
+                      AIC = as.numeric(aic), BIC = as.numeric(bic), 
+                      #VIF = as.numeric(VIF), 
+                      Status = 1)
+      return(resultados)
+      }
+    }, error = function(e) {
+      print(paste0('erro com o modelo: ', formula_texto))
+      
+      return(c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0))
+  })
+}
+
+    # # Caso for apenas uma var dependente e numérica
+    # if (length(vars_independentes_lista) == 1){
+    #   var_independente = vars_independentes_lista[1]
+    #   # Verificando se ela é numerica
+    #   if (data_df[var_independente] %>% class() == 'numeric'){
+    #     # Analise Univariada Correlação
+    #     pearson_teste = cor.test(x=data_df[[var_independente]], 
+    #                              y=data_df[[variavel_dependente]], 
+    #                              method = 'pearson')
+    #     pearson_estimate = pearson_teste$estimate
+    #     pearson_P = pearson_teste$p.value %>% retorne_p()
+    #     # Correlação de Spearman
+    #     spearman_teste = cor.test(x=data_df[[var_independente]], 
+    #                               y=data_df[[variavel_dependente]], 
+    #                               method = 'spearman')
+    #     spearman_estimate = spearman_teste$estimate
+    #     spearman_P = spearman_teste$p.value %>% retorne_p()
+    #   }
+    # }
+    
+
+modelo_lm2 <- lm(score_esc ~ as.numeric(Ano) + Unidade + Regional + Estado, data = df_score)
+```
+
+```
+## Error in eval(mf, parent.frame()): objeto 'df_score' não encontrado
+```
+
+``` r
+metricas_de_avaliacao_regressao(modelo_lm2)
+```
+
+```
+## Error in eval(expr, envir, enclos): objeto 'modelo_lm2' não encontrado
+```
+
+``` r
+# modelo_lm0 <- lm(response ~ fixed_effects, data = dff)
+# metricas_de_avaliacao_regressao(modelo_lm0) %>% round(4)
+# 
+# modelo_lm <- lm(response ~ fixed_effects + group, data = dff)
+# metricas_de_avaliacao_regressao(modelo_lm) %>% round(4)
+# 
+# modelo <- lmer(response ~ fixed_effects + (1|group), data = dff)
+# metricas_de_avaliacao_regressao(modelo) %>% round(4)
+```
+
+
+``` r
+# Função de normalização
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+# Aplicar a normalização à coluna
+normalize(df$coluna)
+```
+
+```
+## Error in df$coluna: objeto de tipo 'closure' não possível dividir em subconjuntos
+```
+
+``` r
+scale(df$coluna)
+```
+
+```
+## Error in df$coluna: objeto de tipo 'closure' não possível dividir em subconjuntos
+```
+
+``` r
+# Ver o resultado
+print(df)
+```
+
+```
+## function (x, df1, df2, ncp, log = FALSE) 
+## {
+##     if (missing(ncp)) 
+##         .Call(C_df, x, df1, df2, log)
+##     else .Call(C_dnf, x, df1, df2, ncp, log)
+## }
+## <bytecode: 0x0000025344a9bb70>
+## <environment: namespace:stats>
+```
+
+
+
+``` r
+df = df_ficticio()
+
+cross_table = function(df, coluna_analisada, sentido_percent='col', apenas_fisher=F, lista_colunas=names(df)){
+
+lista_coluna = lista_colunas[which(!(lista_colunas %in% c(coluna_analisada)))] 
+tabelona = summary_numerico_por_grupo_n_parametrico(df, "idade", coluna_analisada)[FALSE, ]
+
+for (coluna in lista_coluna){
+  classe = class(df[[coluna]])[1]
+  
+  tryCatch({
+    if (classe == "numeric"){
+      local_erro = 'normalidade'
+      if (normalidade_por_grupo_criterio(df, coluna, coluna_analisada) == TRUE){
+        local_erro = 'teste parametrico'
+        tabelinha = summary_numerico_por_grupo_parametrico(df, coluna, coluna_analisada)
+      }
+      else {
+        local_erro = 'teste não parametrico'
+        tabelinha = summary_numerico_por_grupo_n_parametrico(df, coluna, coluna_analisada)
+      }
+    } 
+    else if (classe == 'character' | classe == 'factor'){
+      local_erro = 'tabela de contigencia'
+      tabelinha = conti(df, coluna_analisada, coluna, sentido_percent, apenas_fisher=F)
+    }
+    tabelona = rbind(tabelona, tabelinha)
+  }, error = function(e) {
+    print(paste('problema com a coluna:', coluna, '\ntipo erro:', local_erro))
+  })
+}
+
+# Ajustes Finais
+colnames(tabelona)[colnames(tabelona) == "Overall"] = paste0("Overall 100% (n=", nrow(df[complete.cases(df[[coluna_analisada]]), ]), ")")
+niveis = levels(as.factor(df[[coluna_analisada]]))
+for (i in 1:length(niveis)){
+  nivel = niveis[i]
+  
+  table_d = table( df[[coluna_analisada]] )
+  prob_table = prop.table( table_d ) %>% round(4) * 100
+  
+  colnames(tabelona)[colnames(tabelona) == nivel] = paste0(nivel, ' ', prob_table[i], "% (n=", table_d[i], ")")
+}
+
+return(tabelona)
+}
+
+cross_table(dff, 'desfecho')
+cross_table(dff, 'group', 'row')
+```
+
+
+``` r
+cross_table_glm = function(df, coluna_analisada){
+
+lista_coluna = names(df)[which(!(names(df) %in% c(coluna_analisada)))] 
+tabelona = analise_mod(glm(df[[coluna_analisada]]~df[['idade']], family='binomial'))
+
+tabelona$Variable = NA
+tabelona = tabelona[, c("Variable", setdiff(names(tabelona), "Variable"))]
+tabelona = tabelona[FALSE, ]
+
+for (coluna in lista_coluna){
+  tryCatch({
+    modelo = glm(df[[coluna_analisada]]~df[[coluna]], family='binomial')
+    tabelinha = analise_mod(modelo)
+  
+    tabelinha$Variable = row.names(tabelinha)
+    tabelinha = tabelinha[, c("Variable", setdiff(names(tabelinha), "Variable"))]
+    
+    row.names(tabelinha) = 1:nrow(tabelinha)
+    
+    if (class(df[[coluna]]) != "numeric"){
+      tabelinha = rbind(NA,NA, tabelinha) #adicionando linha
+      tabelinha[["Variable"]] = c(coluna,levels(as.factor(df[[coluna]])))
+    } else{
+      tabelinha[["Variable"]] = coluna
+    }
+    tabelona = rbind(tabelona, tabelinha)
+    
+  }, error = function(e) {
+    print(paste('problema com a coluna:', coluna, '\ntipo erro:', local_erro))
+  })
+}
+
+# Ajustes Finais
+tabelona$`Pr(>|z|)` = sapply(tabelona$`Pr(>|z|)`, function(x) ifelse(is.na(x), NA, retorne_p(x)))
+tabelona$OR = paste0( tabelona$OR, ' (', tabelona$`2.5 %`, ' - ', tabelona$`97.5 %`, ')' )
+tabelona$OR[tabelona$OR == 'NA (NA - NA)'] = NA
+tabelona$`2.5 %` = NULL
+tabelona$`97.5 %` = NULL
+tabelona %>% capture()
+}
+
+cross_table_glm(dff, 'desfecho')
+```
+
+```
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
+## Waiting for profiling to be done...
 ```
 

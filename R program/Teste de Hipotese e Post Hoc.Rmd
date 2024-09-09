@@ -87,13 +87,19 @@ wilcox.test(df$idade ~ df$genero, conf.int = T)
 # Outros Testes de hipotese com ajuste de permutações de Fisher-Pitman do pacote *coin*
 
 ```{r}
+df = dff
 # Testes de hipotese com ajuste de permutações de Fisher-Pitman
 coin::independence_test(df$idade ~ df$genero)
 coin::oneway_test(df$idade ~ df$genero)
 coin::wilcox_test(df$idade ~ df$genero, conf.int = T)
 coin::normal_test(df$idade ~ df$genero)
 coin::median_test(df$idade ~ df$genero)
-coin::savage_test(df$idade ~ df$genero)
+coin::savage_test(df$idade ~ df$genero)$p.value
+resultado <- coin::savage_test(df$idade ~ df$genero)
+pvalor <- coin::pvalue(resultado)
+pvalor
+
+wilcox.test()
 ```
 
 
