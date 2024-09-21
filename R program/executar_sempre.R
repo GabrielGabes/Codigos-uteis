@@ -139,6 +139,7 @@ if (escolha == 1){ ## MODO DIRETO
   
   # Execute cada arquivo .R diretamente
   for (file_url in raw_urls) {
+    print(file_url)
     message("Executando arquivo: ", file_url)
     source(file_url, local = TRUE)
   }
