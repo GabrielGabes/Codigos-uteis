@@ -16,9 +16,6 @@ if(!require(pacman)) install.packages("pacman")
 library(pacman)
 
 
-
-
-#### Carregando meu pacote de analise ####
 # dependents Packages
 pacman::p_load(
   stats,
@@ -34,20 +31,6 @@ pacman::p_load(
   magrittr,
   tidyr
 )
-# Carregando meu pacote
-tryCatch({
-  if(!require(remotes)) install.packages("remotes")
-  remotes::install_github("GabrielGabes/statgsa")
-  suppressWarnings(library(statgsa))
-}, error = function(e) {
-  if(!require(pak)) install.packages("pak")
-  pak::pak("GabrielGabes/statgsa")
-  suppressWarnings(library(statgsa))
-})
-
-
-
-
 #### Outros Pacotes ####
 pacman::p_load(
   tidyr, #manipulação de dados #pivot_longer
@@ -98,4 +81,64 @@ pacman::p_load(
 pacman::p_load(clipr) # captura dos dados => write_clip
 capture = function(tabela, col_names=TRUE, pontuacao=','){
   tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
+}
+
+
+
+
+
+#### Carregando meu pacote de analise ####
+# dependents Packages
+pacman::p_load(
+  stats,
+  rlang,
+  dplyr,
+  janitor,
+  effsize,
+  caret,
+  DescTools,
+  car,
+  pROC,
+  MuMIn,
+  magrittr,
+  tidyr
+)
+
+if (escolha == 1){ ## MODO DIRETO
+  # Carregando meu pacote
+  tryCatch({
+    if(!require(remotes)) install.packages("remotes")
+    remotes::install_github("GabrielGabes/statgsa")
+    suppressWarnings(library(statgsa))
+  }, error = function(e) {
+    if(!require(pak)) install.packages("pak")
+    pak::pak("GabrielGabes/statgsa")
+    suppressWarnings(library(statgsa))
+  })
+} else { ## MODO DRIBLANDO PROBLEMAS COM BLOQUEIO
+  pacman::p_load(httr, xml2)
+  
+  # URL da página de arquivos no GitHub
+  url <- "https://github.com/GabrielGabes/statgsa/tree/master/R"
+  
+  # Obtenha o conteúdo da página
+  page <- httr::GET(url)
+  
+  # Parse o HTML da página
+  content <- content(page, "text")
+  parsed_page <- read_html(content)
+  
+  # Extraia os links dos arquivos .R
+  files <- parsed_page %>%
+    xml_find_all("//a[contains(@href, '/GabrielGabes/statgsa/blob/master/R/') and contains(text(), '.R')]") %>%
+    xml_attr("href")
+  
+  # Transforme os links em URLs brutos
+  raw_urls <- gsub("/blob", "", paste0("https://raw.githubusercontent.com", files))
+  
+  # Execute cada arquivo .R diretamente
+  for (file_url in raw_urls) {
+    message("Executando arquivo: ", file_url)
+    source(file_url, local = TRUE)
+  }
 }

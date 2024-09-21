@@ -1,5 +1,6 @@
 ```{r}
 source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/executar_sempre.R')
+df = df_ficticio(6000)
 ```
 
 ```{r}
@@ -114,46 +115,60 @@ df$numerica[filtro_C] = runif(n)
 teste_num_cat(df, 'numerica', 'cat3')
 ```
 
-```{r}
+# funções reais
 
-col_num = coluna2
-col_cat = 'grupo'
+```{r}
 group_normality_test <- function(df, col_num, col_cat, type_response = 0) {
 
-  # Perform the Kolmogorov-Smirnov test for each group
+  # Realizar o teste de normalidade (Shapiro ou KS) para cada grupo
   resultados <- by(df[[col_num]], df[[col_cat]], function(subset) {
-    ks.test(subset, "pnorm", mean(subset, na.rm=T), sd(subset, na.rm=T))
+    if (length(subset) > 5000) {
+      # Aplicar o teste de Kolmogorov-Smirnov se o tamanho do subset for maior que 5000
+      test_result <- ks.test(subset, "pnorm", mean(subset, na.rm = TRUE), sd(subset, na.rm = TRUE))
+      list(test = test_result, test_type = "ks", n = length(subset))  # Armazenar resultado e tipo de teste
+    } else {
+      # Aplicar o teste de Shapiro-Wilk se o tamanho do subset for menor ou igual a 5000
+      test_result <- shapiro.test(subset)
+      list(test = test_result, test_type = "shapiro", n = length(subset))  # Armazenar resultado e tipo de teste
+    }
   })
 
-  # Extract p-values
-  p_values <- sapply(resultados, function(test) test$p.value)
+  # Extrair p-valores, tipo de teste e contagem de observações
+  p_values <- sapply(resultados, function(result) result$test$p.value)
+  test_types <- sapply(resultados, function(result) result$test_type)
+  counts <- sapply(resultados, function(result) result$n)
 
-  # Check if any p-values indicate non-normality
+  # Verificar se algum p-valor indica não normalidade
   verificacao <- any(p_values < 0.05)
 
-  tabela = data.frame(group = names(p_values), p_value = p_values)
-  rownames(tabela) = NULL
+  # Criar a tabela com grupo, p-valor, tipo de teste e contagem de observações
+  tabela <- data.frame(
+    group = names(p_values),
+    p_value = p_values,
+    test_used = test_types,
+    n_observations = counts
+  )
+  
+  rownames(tabela) <- NULL  # Remover os nomes das linhas
 
-  colnames(tabela) <- c(col_cat, "p_value")  # Rename columns for clarity
-
-  # Return the results based on the type_response parameter
+  # Retornar os resultados com base no parâmetro type_response
   if (type_response == 0) {
-    return(tabela)
+    return(tabela)  # Retorna a tabela com os resultados detalhados
   } else if (type_response == 1) {
-    # At least one distribution does not follow normality
-    # All distributions follow normality
+    # Retornar verificação se algum grupo falha no teste de normalidade
     return(verificacao)
   }
 }
-group_ks_test(df, coluna2, 'grupo', 0)
-bartlett.test(df$tempo_ps2, df$grupo)
+
+df = df_ficticio(3*5000)
+group_normality_test(df, 'idade', 'group1')
+group_normality_test(df, 'idade', 'group1', 1)
 ```
 
 
 
 ```{r}
 library(coin)
-
 
 teste_num_cat = function(df, col_num, col_cat){
 
@@ -174,17 +189,17 @@ teste_num_cat = function(df, col_num, col_cat){
       if (teste_homogeneidade$p.value > 0.05){
         if (usa_permutacao) {
           # Aplica teste de permutação de Fisher-Pitman se algum grupo tiver n < 30
-          teste_usado = "Fisher-Pitman t-test (coin::independence_test)"
+          teste_usado = "Student's T-test (Fisher-Pitman)"
           pvalor = coin::independence_test(df[[col_num]] ~ df[[col_cat]])$p.value
         } else {
           # Teste t de Student padrão
-          teste_usado = "Student's t-test"
+          teste_usado = "Student's T-test"
           pvalor = t.test(df[[col_num]] ~ df[[col_cat]], var.equal = TRUE)$p.value
         }
       } else {
         if (usa_permutacao) {
           # Aplica teste de permutação ajustado para variância desigual
-          teste_usado = "Fisher-Pitman Welch's t-test (coin::oneway_test)"
+          teste_usado = "Welch's T-test (Fisher-Pitman)"
           pvalor = coin::oneway_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
         } else {
           # Teste t de Welch padrão
@@ -195,7 +210,7 @@ teste_num_cat = function(df, col_num, col_cat){
     } else {
       if (usa_permutacao) {
         # Aplica teste de permutação equivalente a Wilcoxon
-        teste_usado = "Wilcoxon test with permutation (coin::wilcox_test)"
+        teste_usado = "Wilcoxon test with permutation (Fisher-Pitman)"
         pvalor = coin::wilcox_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
       } else {
         # Teste de Mann-Whitney (Wilcoxon para 2 amostras)
@@ -214,7 +229,7 @@ teste_num_cat = function(df, col_num, col_cat){
       if (teste_homogeneidade$p.value > 0.05){
         if (usa_permutacao) {
           # Aplica teste de permutação ANOVA
-          teste_usado = "Fisher-Pitman ANOVA (coin::independence_test)"
+          teste_usado = "One-way ANOVA (Fisher-Pitman)"
           pvalor = coin::independence_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
         } else {
           # ANOVA padrão
@@ -224,7 +239,7 @@ teste_num_cat = function(df, col_num, col_cat){
       } else {
         if (usa_permutacao) {
           # Aplica Welch ANOVA ajustado para permutação
-          teste_usado = "Welch's ANOVA with permutation (coin::oneway_test)"
+          teste_usado = "Welch's ANOVA (Fisher-Pitman)"
           pvalor = coin::oneway_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
         } else {
           # Welch ANOVA padrão
@@ -235,7 +250,7 @@ teste_num_cat = function(df, col_num, col_cat){
     } else {
       if (usa_permutacao) {
         # Aplica teste de Kruskal-Wallis com permutação
-        teste_usado = "Kruskal-Wallis with permutation (coin::independence_test)"
+        teste_usado = "Kruskal-Wallis (Fisher-Pitman)"
         pvalor = coin::independence_test(df[[col_num]] ~ df[[col_cat]]) %>% coin::pvalue()
       } else {
         # Kruskal-Wallis padrão
@@ -252,24 +267,28 @@ teste_num_cat = function(df, col_num, col_cat){
 
 
 n = 100
-cat3 = c(rep("A", n), rep("B", n), rep('C', 29))
+cat3 = c(rep("A", n), rep("B", n), rep('C', 50))
 filtro_A = cat3 == "A"
 filtro_B = cat3 == "B"
 filtro_C = cat3 == "C"
 df = data.frame(cat3 = cat3)
+df$cat3 = as.factor(df$cat3)
 
 df$numerica = NA
 df$numerica[filtro_A] = rnorm(n, mean = 10, sd = 20)
 df$numerica[filtro_B] = rnorm(n, mean = 30, sd = 40)
-#df$numerica[filtro_C] = rnorm(29, mean = 30, sd = 40)
-df$numerica[filtro_C] = rpois(29, 40)
-#df$numerica[filtro_C] = runif(29)
 
-col_cat = 'cat3'
-col_num = 'numerica'
-df$cat3 = as.factor(df$cat3)
-teste_num_cat(df, 'numerica', 'cat3')
+df$numerica[filtro_C] = rnorm(29, mean = 30, sd = 40); teste_num_cat(df, 'numerica', 'cat3')
+df$numerica[filtro_C] = rpois(29, 40); teste_num_cat(df, 'numerica', 'cat3')
+df$numerica[filtro_C] = runif(29); teste_num_cat(df, 'numerica', 'cat3')
 
+########################################
+df$numerica[filtro_C] = rnorm(35, mean = 30, sd = 40); teste_num_cat(df, 'numerica', 'cat3')
+df$numerica[filtro_C] = rpois(35, 40); teste_num_cat(df, 'numerica', 'cat3')
+df$numerica[filtro_C] = runif(35); teste_num_cat(df, 'numerica', 'cat3')
+
+df$numerica[filtro_A] = rnorm(n, mean = 10, sd = 40)
+df$numerica[filtro_C] = rnorm(35, mean = 30, sd = 40); teste_num_cat(df, 'numerica', 'cat3')
 ```
 
 

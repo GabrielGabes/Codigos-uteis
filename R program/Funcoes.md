@@ -616,7 +616,7 @@ teste_homogeneidade
 ```
 ## Levene's Test for Homogeneity of Variance (center = mean)
 ##        Df F value Pr(>F)
-## group   1  0.1545 0.6948
+## group   1  1.5926 0.2089
 ##       148
 ```
 
@@ -637,13 +637,13 @@ if (teste_homogeneidade$`Pr(>F)`[1] > 0.05){
 ## 	Two Sample t-test
 ## 
 ## data:  var_num by desfecho
-## t = -2.0014, df = 148, p-value = 0.04718
+## t = -3.6503, df = 148, p-value = 0.0003626
 ## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
 ## 95 percent confidence interval:
-##  -17.7273386  -0.1126614
+##  -28.546041  -8.493959
 ## sample estimates:
 ## mean in group 0 mean in group 1 
-##           50.88           59.80
+##        43.86667        62.38667
 ```
 
 ``` r
@@ -847,7 +847,7 @@ analise_fisher(fisher.test(table(dff$desfecho, dff$genero), conf.int = TRUE))
 ```
 
 ```
-## [1] "1.95 (0.96 - 4.03)"
+## [1] "6.26 (2.89 - 14.20)"
 ```
 
 
@@ -1056,10 +1056,14 @@ metricas_de_avaliacao_glm(modelo) %>% round(4)
 ```
 
 ```
-##             Accuracy       Pos Pred Value          Sensitivity          Specificity          F1_Score.F1                  AUC   Pseudo_R2.McFadden 
-##               0.6333               0.6613               0.5467               0.7200               0.5985               0.6587               0.0564 
-## Pseudo_R2.Nagelkerke                  AIC                  BIC                  VIF               Status 
-##               0.1002             208.2232             226.2870               0.0000               1.0000
+##             Accuracy       Pos Pred Value          Sensitivity 
+##               0.5733               0.6038               0.4267 
+##          Specificity          F1_Score.F1                  AUC 
+##               0.7200               0.5000               0.5952 
+##   Pseudo_R2.McFadden Pseudo_R2.Nagelkerke                  AIC 
+##               0.0234               0.0425             215.0822 
+##                  BIC                  VIF               Status 
+##             233.1460               0.0000               1.0000
 ```
 
 ``` r
@@ -1073,14 +1077,25 @@ metricas_de_avaliacao_glm(modelo_reduzido) %>% round(4)
 ```
 
 ```
-##             Accuracy       Pos Pred Value          Sensitivity          Specificity          F1_Score.F1                  AUC   Pseudo_R2.McFadden 
-##               0.5867               0.5915               0.5600               0.6133               0.5753               0.5778               0.0156 
-## Pseudo_R2.Nagelkerke                  AIC                  BIC                  VIF               Status 
-##               0.0285             208.7012             214.7224               0.0000               1.0000
+##             Accuracy       Pos Pred Value          Sensitivity 
+##               0.5467               0.5479               0.5333 
+##          Specificity          F1_Score.F1                  AUC 
+##               0.5600               0.5405               0.5385 
+##   Pseudo_R2.McFadden Pseudo_R2.Nagelkerke                  AIC 
+##               0.0032               0.0060             211.2709 
+##                  BIC                  VIF               Status 
+##             217.2922               0.0000               1.0000
 ```
 
 ``` r
 modelo_misto = glmer(desfecho ~ fixed_effects + (1|group), data=dff, family = binomial())
+```
+
+```
+## boundary (singular) fit: see help('isSingular')
+```
+
+``` r
 metricas_de_avaliacao_glm(modelo_misto) %>% round(4)
 ```
 
@@ -1090,10 +1105,17 @@ metricas_de_avaliacao_glm(modelo_misto) %>% round(4)
 ```
 
 ```
-##       Accuracy Pos Pred Value    Sensitivity    Specificity    F1_Score.F1            AUC            R2M            R2c            AIC            BIC 
-##         0.6000         0.6027         0.5867         0.6133         0.5946         0.6434         0.0259         0.0215       209.9401       218.9721 
-##         Status 
-##         1.0000
+## boundary (singular) fit: see help('isSingular')
+## boundary (singular) fit: see help('isSingular')
+```
+
+```
+##       Accuracy Pos Pred Value    Sensitivity    Specificity 
+##         0.5467         0.5479         0.5333         0.5600 
+##    F1_Score.F1            AUC            R2M            R2c 
+##         0.5405         0.5385         0.0055         0.0045 
+##            AIC            BIC         Status 
+##       213.2709       222.3028         1.0000
 ```
 
 ``` r
@@ -1299,7 +1321,7 @@ print(df)
 ##         .Call(C_df, x, df1, df2, log)
 ##     else .Call(C_dnf, x, df1, df2, ncp, log)
 ## }
-## <bytecode: 0x0000025344a9bb70>
+## <bytecode: 0x0000014156d85450>
 ## <environment: namespace:stats>
 ```
 
