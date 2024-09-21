@@ -104,6 +104,7 @@ pacman::p_load(
   tidyr
 )
 
+escolha = 0
 if (escolha == 1){ ## MODO DIRETO
   # Carregando meu pacote
   tryCatch({
