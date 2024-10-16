@@ -1,30 +1,22 @@
----
-title: "Meu Próprio Pacote"
-author: "Gabriel Silva Dos Anjos"
-date: "2024-08-12"
-output: html_document
----
+## ----BIBLIOTECAS USADAS NAS FUNÇÕES-------------------------------------------------
 
-
-``` r
 pacman::p_load(
 dplyr, # manipulação de dados
 magrittr, # operador pipe line %>%
 janitor, # tabela de contigencia => tabyl, adorn_pct_formatting, adorn_totals, adorn_percentages, adorn_ns
 effsize # tamanho do efeito d'cohen
 )
-```
 
 
-``` r
+
+## ----Capturar tabelas ou medidas----------------------------------------------------
 pacman::p_load(clipr) # captura dos dados => write_clip
 capture = function(tabela, col_names=TRUE, pontuacao=','){
   tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
 }
-```
 
 
-``` r
+## ----Retornar valor de p------------------------------------------------------------
 retorne_p = function(valor){ 
   valor_str = formatC(valor, format = "f", digits = 6)
   if (valor < 0.05){
@@ -38,87 +30,18 @@ retorne_p = function(valor){
     else {substring(as.character(valor_str), 1, 4)}}}
 
 retorne_p(0.054)
-```
-
-```
-## [1] "0.054"
-```
-
-``` r
 retorne_p(0.050)
-```
-
-```
-## [1] "0.050"
-```
-
-``` r
 retorne_p(0.059)
-```
-
-```
-## [1] "0.059"
-```
-
-``` r
 retorne_p(0.045)
-```
-
-```
-## [1] "0.04"
-```
-
-``` r
 retorne_p(0.4)
-```
-
-```
-## [1] "0.40"
-```
-
-``` r
 retorne_p(0.3454149)
-```
-
-```
-## [1] "0.34"
-```
-
-``` r
 retorne_p(0.399949)
-```
-
-```
-## [1] "0.39"
-```
-
-``` r
 retorne_p(0.04)
-```
-
-```
-## [1] "0.04"
-```
-
-``` r
 retorne_p(0.002)
-```
-
-```
-## [1] "0.002"
-```
-
-``` r
 retorne_p(0.00002)
-```
-
-```
-## [1] "< 0.001"
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 retorne_p_ajust = function(valor){
   if (valor == "< 0.001"){
     "P-Value < 0.001"
@@ -129,31 +52,11 @@ retorne_p_ajust = function(valor){
 }
 
 retorne_p_ajust(retorne_p(0.00002))
-```
-
-```
-## [1] "P-Value < 0.001"
-```
-
-``` r
 retorne_p_ajust(retorne_p(0.399949))
-```
-
-```
-## [1] "P-Value = 0.39"
-```
-
-``` r
 retorne_p_ajust(retorne_p(0.04))
-```
-
-```
-## [1] "P-Value = 0.04"
-```
 
 
-
-``` r
+## ----Aplicação em uma coluna inteira------------------------------------------------
 # Aplicando a função a todos elementos da coluna
 apply_retorne_p = function(df, coluna) {
   df[[coluna]] = sapply(df[[coluna]], function(x) {
@@ -165,11 +68,9 @@ apply_retorne_p = function(df, coluna) {
   })
   return(df)
 }
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 rround = function(valor, digitos){
   if (abs(valor) < 0.01 || abs(valor) > 1000){
     if (abs(valor) < 0.01){formatC(0, format = "f", digits = digitos)}
@@ -177,71 +78,16 @@ rround = function(valor, digitos){
   else{formatC(valor, format = "f", digits = digitos)}}
 
 rround(30, 2)
-```
-
-```
-## [1] "30.00"
-```
-
-``` r
 rround(0, 2)
-```
-
-```
-## [1] "0.00"
-```
-
-``` r
 rround(0.001, 2)
-```
-
-```
-## [1] "0.00"
-```
-
-``` r
 rround(0.0001, 2)
-```
-
-```
-## [1] "0.00"
-```
-
-``` r
 rround(0.041212, 2)
-```
-
-```
-## [1] "0.04"
-```
-
-``` r
 rround(0.1, 2)
-```
-
-```
-## [1] "0.10"
-```
-
-``` r
 rround(45.5151, 2)
-```
-
-```
-## [1] "45.52"
-```
-
-``` r
 rround(5115156, 2)
-```
-
-```
-## [1] "5.12e+06"
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 rround = function(valor, digitos){
   if (abs(valor) < 0.01 && abs(valor) > 0.0009) {formatC(valor, format = "f", digits = 3)} 
   else if (valor == 0){"0.00"}
@@ -250,79 +96,17 @@ rround = function(valor, digitos){
 }
 
 rround(30, 2)
-```
-
-```
-## [1] "30.00"
-```
-
-``` r
 rround(0, 2)
-```
-
-```
-## [1] "0.00"
-```
-
-``` r
 rround(0.001, 2)
-```
-
-```
-## [1] "0.001"
-```
-
-``` r
 rround(0.0001, 2)
-```
-
-```
-## [1] "1.00e-04"
-```
-
-``` r
 rround(0.041212, 2)
-```
-
-```
-## [1] "0.04"
-```
-
-``` r
 rround(0.1, 2)
-```
-
-```
-## [1] "0.10"
-```
-
-``` r
 rround(45.5151, 2)
-```
-
-```
-## [1] "45.52"
-```
-
-``` r
 rround(5115156, 2)
-```
-
-```
-## [1] "5.12e+06"
-```
-
-``` r
 rround(0.0000000041212, 2)
-```
-
-```
-## [1] "4.12e-09"
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 # Aplicando a função a todos elementos da coluna 
 apply_rround = function(df, coluna, digitos = 2){
   df[[coluna]] = sapply(df[[coluna]], function(x) {
@@ -345,18 +129,13 @@ apply_rround2 = function(vetor, digitos = 2){
   })
   return(df)
 }
-```
-
-# Tabelas
 
 
-``` r
+## ----Pacotes usados-----------------------------------------------------------------
 library(janitor) #tabela de contigencia => tabyl, adorn_pct_formatting, adorn_totals, adorn_percentages, adorn_ns
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 # Tabela contagem simples
 cont = function(df, variavel){
   df %>% tabyl(.data[[variavel]], show_na = FALSE) %>% 
@@ -375,11 +154,9 @@ tabelinha_ajust = function(tabelinha){
   tabelinha$medida2[1] = NA
   return(tabelinha)
 }
-```
 
 
-
-``` r
+## ----Critério de Fisher-------------------------------------------------------------
 # Função que verifica se é melhor aplicavel o teste de fisher para testar a hipotese entre duas variaveis categoricas
 fisher_criterio = function(df, var1, var2){
   length1 = length(levels(as.factor(df[[var1]])))
@@ -397,11 +174,9 @@ fisher_criterio = function(df, var1, var2){
     return(any(expectativas < 5))
   }
 }
-```
 
 
-
-``` r
+## ----Tabela contingencia------------------------------------------------------------
 conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
   #sentido_porcent => #col, row
   tabela = df %>% 
@@ -450,11 +225,9 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
 }
 
 conti(dff, "desfecho", "tratamentos")
-```
 
 
-
-``` r
+## ----Teste de normalidade-----------------------------------------------------------
 # Maneira antiga
 # library(RVAideMemoire) # shapiro por grupo ==> byf.shapiro(numerico~categorico, df)
 # esse pacote é bom procurar saber mais dps, contem teste de levene | comparações múltiplas usando o teste t de Student com correção para múltiplos testes (pairwise.t.test) | ANOVA ajustada para heterocedasticidade (anova.hetero())
@@ -515,11 +288,9 @@ normalidade_por_grupo_criterio = function(df, col_num, col_cat){
     normalidade_por_grupo_shapiro(df, col_num, col_cat) %>% return()
   }
 }
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 summary_numerico_parametrico = function(df, col_num){
   tabela = df %>%
     filter(!is.na(!!sym(col_num))) %>%
@@ -604,23 +375,12 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
 }
 # Exemplo de uso:
 summary_numerico_por_grupo_parametrico(dff, "var_num", "desfecho", 'T')
-```
 
 
-``` r
+## -----------------------------------------------------------------------------------
 library(car)
 teste_homogeneidade = leveneTest(var_num ~ desfecho, dff, center=mean)
 teste_homogeneidade
-```
-
-```
-## Levene's Test for Homogeneity of Variance (center = mean)
-##        Df F value Pr(>F)
-## group   1  1.5926 0.2089
-##       148
-```
-
-``` r
 # h0 = as varianças são homogeneas
 
 if (teste_homogeneidade$`Pr(>F)`[1] > 0.05){
@@ -630,37 +390,14 @@ if (teste_homogeneidade$`Pr(>F)`[1] > 0.05){
   teste_usado = "Welch's t-test"
   t.test(var_num ~ desfecho, dff, var.equal = F) # 
 }
-```
-
-```
-## 
-## 	Two Sample t-test
-## 
-## data:  var_num by desfecho
-## t = -3.6503, df = 148, p-value = 0.0003626
-## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
-## 95 percent confidence interval:
-##  -28.546041  -8.493959
-## sample estimates:
-## mean in group 0 mean in group 1 
-##        43.86667        62.38667
-```
-
-``` r
 print(teste_usado)
-```
-
-```
-## [1] "Student's t-test"
-```
 
 
 
+## -----------------------------------------------------------------------------------
 
 
-
-
-``` r
+## -----------------------------------------------------------------------------------
 summary_numerico_n_parametrico = function(df, col_num){
   tabela = df %>%
     filter(!is.na(!!sym(col_num))) %>%
@@ -748,11 +485,9 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
 }
 
 summary_numerico_por_grupo_n_parametrico(dff, "var_num", "desfecho", 'T')
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 summary_numerico_por_grupo = function(df, col_num, col_cat){
   if (normalidade_por_grupo_criterio(df, col_num, col_cat)){
     summary_numerico_por_grupo_parametrico(df, col_num, col_cat) %>% return()
@@ -762,10 +497,9 @@ summary_numerico_por_grupo = function(df, col_num, col_cat){
 }
 
 summary_numerico_por_grupo(dff, "var_num", "desfecho")
-```
 
 
-``` r
+## ----Medidas de modelo de Regressão Logistica---------------------------------------
 analise_mod = function(modelo){
   estimadores = as.data.frame(summary(modelo)$coefficients)
   odds = as.data.frame((exp(cbind(OR= coef(modelo), confint(modelo)))))
@@ -831,11 +565,9 @@ analise_mod_antiga = function(modelo){
   
   return(tabela)
 }
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 analise_fisher = function(teste){
   odds = rround(teste$estimate, 2)
   ic_0 = rround(teste$conf.int[1], 2)
@@ -844,60 +576,53 @@ analise_fisher = function(teste){
   return(valores)
 }
 analise_fisher(fisher.test(table(dff$desfecho, dff$genero), conf.int = TRUE))
-```
-
-```
-## [1] "6.26 (2.89 - 14.20)"
-```
 
 
-
-``` r
-# Adicionar "\n" em frases muito longas
-adicionar_quebra_de_linha = function(frase, comprimento_maximo = 20) {
+## -----------------------------------------------------------------------------------
+# Função para adicionar quebras de linha em frases longas
+adicionar_quebra_de_linha <- function(frase, comprimento_maximo = 20, caractere_para_pular = ' ') {
   frase <- as.character(frase)
-  # Verifica se frase é NA e retorna NA se for o caso
-  if (is.na(frase)) {
-    return(NA)
-  }
   
+  # Verifica se a frase é NA e retorna NA
+  if (is.na(frase)) return(NA)
+  
+  # Se a frase for maior que o comprimento máximo
   if (nchar(frase) > comprimento_maximo) {
-    palavras = strsplit(frase, " ")[[1]]
-    frase_final = ""
-    linha_atual = ""
+    palavras <- unlist(strsplit(frase, caractere_para_pular))
+    frase_final <- ""
+    linha_atual <- ""
     
+    # Percorre as palavras e adiciona quebras de linha conforme necessário
     for (palavra in palavras) {
-      if (nchar(paste(linha_atual, palavra, sep = " ")) <= comprimento_maximo) {
-        linha_atual = paste(linha_atual, palavra, sep = " ")
+      if (nchar(paste0(linha_atual, caractere_para_pular, palavra)) <= comprimento_maximo) {
+        linha_atual <- paste0(linha_atual, ifelse(nchar(linha_atual) > 0, caractere_para_pular, ""), palavra)
       } else {
-        frase_final = paste(frase_final, linha_atual, "\n", sep = "")
-        linha_atual = palavra
+        frase_final <- paste0(frase_final, linha_atual, "\n")
+        linha_atual <- palavra
       }
     }
-    frase_final = paste(frase_final, linha_atual, sep = "")
-    frase <- as.factor(frase)
+    
+    # Adiciona a última linha ao resultado final
+    frase_final <- paste0(frase_final, linha_atual)
     return(frase_final)
-  } else {
-    return(frase)
-  }
+  } 
+  
+  # Retorna a frase original se não ultrapassar o comprimento máximo
+  return(frase)
 }
 
+# Teste com uma frase longa
+frase_longa <- "Esta é uma frase muito longa que deve ser quebrada em várias linhas para melhor visualização."
+adicionar_quebra_de_linha(frase_longa, 50)
 
-frase_longa = "Esta é uma frase muito longa que deve ser quebrada em várias linhas para melhor visualização."
-adicionar_quebra_de_linha(frase_longa,50)
-```
-
-```
-## [1] " Esta é uma frase muito longa que deve ser\nquebrada em várias linhas para melhor\nvisualização."
-```
-
-``` r
+# Teste com uma frase longa e caractere de separação diferente
+frase_longa <- "Esta_é_uma_frase_muito_longa_que_deve_ser_quebrada_em_várias_linhas_para_melhor_visualização."
+adicionar_quebra_de_linha(frase_longa, 50, '_')
 #df$coluna = sapply(df$coluna, function(x) adicionar_quebra_de_linha(x, 40))
-```
 
 
+## ----BIBLIOTECAS NÃO USADAS---------------------------------------------------------
 
-``` r
 #library(RcmdrMisc) #summary diferenciado ==> numSummary()
 # #bibliotecas para extrair descrições das variaveis
 # library(purrr)
@@ -935,17 +660,13 @@ adicionar_quebra_de_linha(frase_longa,50)
 # 
 # #################ANTIGO ABANDONADOS#######################
 # library(tableone) #criação de tabelas
-```
 
 
-
-``` r
+## -----------------------------------------------------------------------------------
 #library(gmodels) #analise de residuo em tabelas de cruzamentos categorica - TESTE PÓS HOC (de qui-quadrado)
-```
 
 
-
-``` r
+## ----Função criação e avaliação de modelos de classificação-------------------------
 library(caret)
 library(DescTools)
 library(car)
@@ -1045,80 +766,13 @@ metricas_de_avaliacao_glm = function(modelo){
 
 modelo = glm(desfecho ~ fixed_effects + group, data = dff, family = binomial())
 metricas_de_avaliacao_glm(modelo) %>% round(4)
-```
 
-```
-## Setting levels: control = 0, case = 1
-```
-
-```
-## Setting direction: controls < cases
-```
-
-```
-##             Accuracy       Pos Pred Value          Sensitivity 
-##               0.5733               0.6038               0.4267 
-##          Specificity          F1_Score.F1                  AUC 
-##               0.7200               0.5000               0.5952 
-##   Pseudo_R2.McFadden Pseudo_R2.Nagelkerke                  AIC 
-##               0.0234               0.0425             215.0822 
-##                  BIC                  VIF               Status 
-##             233.1460               0.0000               1.0000
-```
-
-``` r
 modelo_reduzido = glm(desfecho ~ fixed_effects, data = dff, family = binomial())
 metricas_de_avaliacao_glm(modelo_reduzido) %>% round(4)
-```
 
-```
-## Setting levels: control = 0, case = 1
-## Setting direction: controls < cases
-```
-
-```
-##             Accuracy       Pos Pred Value          Sensitivity 
-##               0.5467               0.5479               0.5333 
-##          Specificity          F1_Score.F1                  AUC 
-##               0.5600               0.5405               0.5385 
-##   Pseudo_R2.McFadden Pseudo_R2.Nagelkerke                  AIC 
-##               0.0032               0.0060             211.2709 
-##                  BIC                  VIF               Status 
-##             217.2922               0.0000               1.0000
-```
-
-``` r
 modelo_misto = glmer(desfecho ~ fixed_effects + (1|group), data=dff, family = binomial())
-```
-
-```
-## boundary (singular) fit: see help('isSingular')
-```
-
-``` r
 metricas_de_avaliacao_glm(modelo_misto) %>% round(4)
-```
 
-```
-## Setting levels: control = 0, case = 1
-## Setting direction: controls < cases
-```
-
-```
-## boundary (singular) fit: see help('isSingular')
-## boundary (singular) fit: see help('isSingular')
-```
-
-```
-##       Accuracy Pos Pred Value    Sensitivity    Specificity 
-##         0.5467         0.5479         0.5333         0.5600 
-##    F1_Score.F1            AUC            R2M            R2c 
-##         0.5405         0.5385         0.0055         0.0045 
-##            AIC            BIC         Status 
-##       213.2709       222.3028         1.0000
-```
-
-``` r
 # Realizar o Teste de Deviance
 # library(MASS)
 # anova(modelo_reduzido, modelo, test = "Chisq")
@@ -1135,11 +789,11 @@ metricas_de_avaliacao_glm(modelo_misto) %>% round(4)
 # modelo %>% stdres() %>% summary() # residuos padronizados
 # Anova(modelo, type = 'II', test = "Wald") ## Overall effects
 # Anova(modelo)
-```
 
 
 
-``` r
+## ----Função criação e avaliação de modelos regressão--------------------------------
+
 # library(lmerTest) # é melhor que library(lme4)
 # library(MuMIn)
  # R quadrado para modelos mistos # 
@@ -1261,21 +915,9 @@ metricas_de_avaliacao_regressao = function(modelo){
     
 
 modelo_lm2 <- lm(score_esc ~ as.numeric(Ano) + Unidade + Regional + Estado, data = df_score)
-```
-
-```
-## Error in eval(mf, parent.frame()): objeto 'df_score' não encontrado
-```
-
-``` r
 metricas_de_avaliacao_regressao(modelo_lm2)
-```
 
-```
-## Error in eval(expr, envir, enclos): objeto 'modelo_lm2' não encontrado
-```
 
-``` r
 # modelo_lm0 <- lm(response ~ fixed_effects, data = dff)
 # metricas_de_avaliacao_regressao(modelo_lm0) %>% round(4)
 # 
@@ -1284,10 +926,11 @@ metricas_de_avaliacao_regressao(modelo_lm2)
 # 
 # modelo <- lmer(response ~ fixed_effects + (1|group), data = dff)
 # metricas_de_avaliacao_regressao(modelo) %>% round(4)
-```
 
 
-``` r
+
+## -----------------------------------------------------------------------------------
+
 # Função de normalização
 normalize <- function(x) {
   return ((x - min(x)) / (max(x) - min(x)))
@@ -1295,39 +938,15 @@ normalize <- function(x) {
 
 # Aplicar a normalização à coluna
 normalize(df$coluna)
-```
-
-```
-## Error in df$coluna: objeto de tipo 'closure' não possível dividir em subconjuntos
-```
-
-``` r
 scale(df$coluna)
-```
 
-```
-## Error in df$coluna: objeto de tipo 'closure' não possível dividir em subconjuntos
-```
-
-``` r
 # Ver o resultado
 print(df)
-```
-
-```
-## function (x, df1, df2, ncp, log = FALSE) 
-## {
-##     if (missing(ncp)) 
-##         .Call(C_df, x, df1, df2, log)
-##     else .Call(C_dnf, x, df1, df2, ncp, log)
-## }
-## <bytecode: 0x0000014156d85450>
-## <environment: namespace:stats>
-```
 
 
 
-``` r
+
+## ----Cross Table Bioestatistica-----------------------------------------------------
 df = df_ficticio()
 
 cross_table = function(df, coluna_analisada, sentido_percent='col', apenas_fisher=F, lista_colunas=names(df)){
@@ -1377,10 +996,9 @@ return(tabelona)
 
 cross_table(dff, 'desfecho')
 cross_table(dff, 'group', 'row')
-```
 
 
-``` r
+## -----------------------------------------------------------------------------------
 cross_table_glm = function(df, coluna_analisada){
 
 lista_coluna = names(df)[which(!(names(df) %in% c(coluna_analisada)))] 
@@ -1423,44 +1041,4 @@ tabelona %>% capture()
 }
 
 cross_table_glm(dff, 'desfecho')
-```
-
-```
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-## Waiting for profiling to be done...
-```
 

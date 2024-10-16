@@ -1,10 +1,10 @@
-## ----df ficticio-------------------------------------------------------------------------------------------------------
+## ----df ficticio--------------------------------------------------------------------
 ##source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
 ##source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
 #dff
 
 
-## ----Pacotes de graficos-----------------------------------------------------------------------------------------------
+## ----Pacotes de graficos------------------------------------------------------------
 pacman::p_load(
   ggplot2, # graficos
   ggthemes, # temas ggplot
@@ -16,7 +16,7 @@ pacman::p_load(
 # library(ggsignif) #significancia entre grupos
 
 
-## ----Barras Simples----------------------------------------------------------------------------------------------------
+## ----Barras Simples-----------------------------------------------------------------
 cont_grafi = function(df, coluna){
   # Criando tabela de contagem
   tabela = df %>% filter(!is.na(!!sym(coluna))) %>% 
@@ -34,15 +34,12 @@ cont_grafi = function(df, coluna){
     labs(x=NULL, y="frequenciauency (%)", title =NULL)
 }
 
-#library(RColorBrewer)
-#paleta_azul <- colorRampPalette(c("#f7fbff", "#08306b"))(6)
-
 cont_grafi(dff, 'desfecho')
 cont_grafi(dff, 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)
 
 
-## ----Barras por Grupos (duas variaveis)--------------------------------------------------------------------------------
+## ----Barras por Grupos (duas variaveis)---------------------------------------------
 #para representar uma tabela de contingencia (categorica vs categorica)
 
 conti_grafi = function(df, coluna_x, coluna_y, sentido_percent='col'){
@@ -76,7 +73,7 @@ conti_grafi(dff, 'desfecho', 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)
 
 
-## ----Graficos Boxplot, Violino, Jitter por Grupos----------------------------------------------------------------------
+## ----Graficos Boxplot, Violino, Jitter por Grupos-----------------------------------
 # para representar analise númerica por grupo (variavel: numerica vs categorica)
 
 box_vin_jit = function(df, col_num, col_cat, arredondamento = 0){
@@ -113,7 +110,7 @@ box_vin_jit(dff, 'var_num', 'desfecho') #+ coord_flip()
 #ggsave("nome_grafico.png", height=10, width=10.5, units="cm", dpi= 600)
 
 
-## ----Graficos Boxplot, Pontos Pareados---------------------------------------------------------------------------------
+## ----Graficos Boxplot, Pontos Pareados----------------------------------------------
 # para representar amostras pareadas
 
 box_pareado = function(df_selecionado, palavra_padrao_da_coluna_analisada){
@@ -140,7 +137,7 @@ box_pareado(dff[c('momento_1', 'momento_2', 'momento_3')], 'momento')
 box_pareado(dff[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
 
 
-## ----Grafico de Dinamite-----------------------------------------------------------------------------------------------
+## ----Grafico de Dinamite------------------------------------------------------------
 # para representar média e desvio padrão (variavel: numerico (categorica vs categorica) )
 
 dinamite = function(df, col_num, col_cat){
@@ -173,7 +170,7 @@ dinamite(dff, 'momento_3', 'desfecho')
 dinamite(dff, 'momento_3', 'tratamentos')
 
 
-## ----Grafico de Erro---------------------------------------------------------------------------------------------------
+## ----Grafico de Erro----------------------------------------------------------------
 grafico_de_erro = function(df, col_num, col_cat){
   # Tabela com medidas
   tabela = df %>% filter(!is.na(!!sym(col_cat))) %>% 
@@ -201,7 +198,7 @@ grafico_de_erro(dff, 'momento_3', 'desfecho')
 grafico_de_erro(dff, 'momento_3', 'tratamentos')
 
 
-## ----Grafico de Densidade----------------------------------------------------------------------------------------------
+## ----Grafico de Densidade-----------------------------------------------------------
 densidade_grafi = function(df, col_num, col_cat){
   
   if (shapiro.test(df[[col_num]])$p.value == TRUE){
@@ -223,7 +220,7 @@ densidade_grafi = function(df, col_num, col_cat){
 densidade_grafi(dff, 'var_num')
 
 
-## ----Grafico de Densidade por Grupos-----------------------------------------------------------------------------------
+## ----Grafico de Densidade por Grupos------------------------------------------------
 # variavel: numerica vs categorica
 
 densidade_grafi = function(df, col_num, col_cat){
@@ -245,7 +242,7 @@ densidade_grafi(dff, 'momento_3', 'desfecho') + facet_grid(~desfecho)
 densidade_grafi(dff, 'momento_3', 'tratamentos') + facet_grid(~tratamentos)
 
 
-## ----------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------
 retorne_p_ajust = function(valor){
   if (valor == "< 0.001"){
     "P-Value < 0.001"
@@ -260,8 +257,7 @@ retorne_p_ajust(pval_string(0.399949))
 retorne_p_ajust(pval_string(0.04))
 
 
-## ----Densidade, Teste de Normalidade-----------------------------------------------------------------------------------
-
+## ----Densidade, Teste de Normalidade------------------------------------------------
 teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T){
   media = mean(df[[coluna]], na.rm=T)
   desvpad = sd(df[[coluna]], na.rm=T)
@@ -284,18 +280,27 @@ teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T
                    colour = lista_cor1[cor_esc]) +
     geom_density(lwd = 1.2, linetype = 2, colour = lista_cor2[cor_esc]) +
     geom_function(fun= dnorm, args=list(mean=media,sd=desvpad), col='black', lwd=1, lty=4) +
-    labs(x=NULL, y='Probability Density', subtitle = subtitulo) +
+    labs(subtitle = 'Distribution Density', x='Values', y='Probability Density') +
     theme_minimal()
   
   if (plot_qqplot == T){
     p2 = ggplot(data = df, aes(sample = !!sym(coluna))) +
-    stat_qq(shape=21, size=2.5, fill=lista_cor0[cor_esc], alpha = 0.5) + 
-    stat_qq_line() +
-    labs(subtitle = '', x = 'Theoretical Quantiles', y = NULL) + #'Standardized Residuals'
-    theme_minimal()
-    return((p1+p2))
+      stat_qq(shape=21, size=2.5, fill=lista_cor0[cor_esc], alpha = 0.5) +
+      stat_qq_line() +
+      labs(subtitle = 'QQPlot', x = 'Theoretical Quantiles', y = 'Sample Quantiles') +
+      theme_minimal()
+    
+    # Combinar os gráficos com um título geral
+    combined_plot <- p1+p2 + 
+      plot_annotation(subtitle = subtitulo, 
+                      theme = theme(
+                        plot.title = element_text(hjust = 0.5),
+                        plot.subtitle = element_text(hjust = 0.5)
+                        )
+                      )
+    return(combined_plot)
   } else {
-    return(p1)
+    return(p1 + labs(title = subtitulo))
   }
 }
 
@@ -304,10 +309,10 @@ teste_normalidade(dff, 'var_num', cor_esc = 2) #+ facet_grid(~desfecho) + labs(s
 teste_normalidade(dff, 'var_num', cor_esc = 3) #+ facet_grid(tratamentos~.) + labs(subtitle = NULL)
 teste_normalidade(dff, 'var_num', cor_esc = 4)
 teste_normalidade(dff, 'var_num', cor_esc = 5)
-teste_normalidade(dff, 'var_num', cor_esc = 6) 
+teste_normalidade(dff, 'var_num', cor_esc = 6) + plot_annotation(title = 'teste')
 
 
-## ----Grafico de diagnostico de modelos lineares------------------------------------------------------------------------
+## ----Grafico de diagnostico de modelos lineares-------------------------------------
 
 #para lidar com objetos lmerMod.
 pacman::p_load(
@@ -436,7 +441,7 @@ lm_diagnostic(modelo_lmer)
 
 
 
-## ----Boxplot dos Residuos de Multiplos Modelos-------------------------------------------------------------------------
+## ----Boxplot dos Residuos de Multiplos Modelos--------------------------------------
 
 # Função para extrair resíduos de diferentes tipos de modelos
 extrair_residuos <- function(modelo, nome_modelo) {
@@ -497,7 +502,7 @@ plotar_boxplot_residuos(list(modelo_lm0, modelo_lm, modelo))
 
 
 
-## ----Grafico de timeline-----------------------------------------------------------------------------------------------
+## ----Grafico de timeline------------------------------------------------------------
 # (data ou numerica vs categorica)
 time_line_grafi = function(df, col_num, col_cat){
   tabela = df %>% 
@@ -514,8 +519,12 @@ time_line_grafi = function(df, col_num, col_cat){
 #time_line_grafi(de, 'idade', 'desfecho')
 
 
-## ----Forest Plot-------------------------------------------------------------------------------------------------------
+## ----Forest Plot--------------------------------------------------------------------
 fore_plot = function(tabela, titulo = NULL){
+  tabela_mod$OR = tabela_mod$OR %>% as.numeric()
+  tabela_mod$`2.5 %` = tabela_mod$`2.5 %` %>% as.numeric()
+  tabela_mod$`97.5 %` = tabela_mod$`97.5 %` %>% as.numeric()
+  
   xminimo = min(tabela$`2.5 %`, na.rm = T)
   xmaximo = max(tabela$`97.5 %`, na.rm = T)
   
@@ -573,11 +582,11 @@ fore_plot = function(tabela, titulo = NULL){
 }
 
 
-## ----------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------
 
 
-## ----------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------
 
 
-## ----------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------
 
