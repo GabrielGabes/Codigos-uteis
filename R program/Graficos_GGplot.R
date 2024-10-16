@@ -34,6 +34,9 @@ cont_grafi = function(df, coluna){
     labs(x=NULL, y="frequenciauency (%)", title =NULL)
 }
 
+#library(RColorBrewer)
+#paleta_azul <- colorRampPalette(c("#f7fbff", "#08306b"))(6)
+
 cont_grafi(dff, 'desfecho')
 cont_grafi(dff, 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)

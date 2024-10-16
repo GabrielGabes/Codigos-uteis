@@ -34,7 +34,7 @@ pacman::p_load(
 )
 #########################################
 
-escolha = 0
+escolha = 1
 if (escolha == 1){ ## MODO DIRETO
   # Carregando meu pacote
   tryCatch({

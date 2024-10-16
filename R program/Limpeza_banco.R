@@ -1,6 +1,5 @@
 ####################################################
 
-
 ####################################################
 # Função para normalizar os nomes das colunas
 library(stringr)
@@ -12,7 +11,7 @@ normalize_column_names <- function(df) {
   # Substituir espaços por underscores
   colnames(df) <- str_replace_all(colnames(df), " ", "_")
   # Remover caracteres especiais, mantendo apenas letras, números e underscores
-  colnames(df) <- gsub("[^a-z0-9_]", "", colnames(df))
+  colnames(df) <- gsub("[^a-z0-9_]", "", colnames(df)) # nome <- stri_trans_general(nome, "Latin-ASCII")  # Remover caracteres especiais
   # Substituir múltiplos underscores consecutivos por um único underscore
   colnames(df) <- gsub("_+", "_", colnames(df))
   # Remover underscores no início ou fim dos nomes de colunas

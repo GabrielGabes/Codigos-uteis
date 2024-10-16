@@ -538,6 +538,10 @@ time_line_grafi = function(df, col_num, col_cat){
 
 ```{r Forest Plot}
 fore_plot = function(tabela, titulo = NULL){
+  tabela_mod$OR = tabela_mod$OR %>% as.numeric()
+  tabela_mod$`2.5 %` = tabela_mod$`2.5 %` %>% as.numeric()
+  tabela_mod$`97.5 %` = tabela_mod$`97.5 %` %>% as.numeric()
+  
   xminimo = min(tabela$`2.5 %`, na.rm = T)
   xmaximo = max(tabela$`97.5 %`, na.rm = T)
   

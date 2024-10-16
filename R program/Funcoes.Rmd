@@ -604,38 +604,45 @@ analise_fisher(fisher.test(table(dff$desfecho, dff$genero), conf.int = TRUE))
 
 
 ```{r}
-# Adicionar "\n" em frases muito longas
-adicionar_quebra_de_linha = function(frase, comprimento_maximo = 20) {
+# Função para adicionar quebras de linha em frases longas
+adicionar_quebra_de_linha <- function(frase, comprimento_maximo = 20, caractere_para_pular = ' ') {
   frase <- as.character(frase)
-  # Verifica se frase é NA e retorna NA se for o caso
-  if (is.na(frase)) {
-    return(NA)
-  }
   
+  # Verifica se a frase é NA e retorna NA
+  if (is.na(frase)) return(NA)
+  
+  # Se a frase for maior que o comprimento máximo
   if (nchar(frase) > comprimento_maximo) {
-    palavras = strsplit(frase, " ")[[1]]
-    frase_final = ""
-    linha_atual = ""
+    palavras <- unlist(strsplit(frase, caractere_para_pular))
+    frase_final <- ""
+    linha_atual <- ""
     
+    # Percorre as palavras e adiciona quebras de linha conforme necessário
     for (palavra in palavras) {
-      if (nchar(paste(linha_atual, palavra, sep = " ")) <= comprimento_maximo) {
-        linha_atual = paste(linha_atual, palavra, sep = " ")
+      if (nchar(paste0(linha_atual, caractere_para_pular, palavra)) <= comprimento_maximo) {
+        linha_atual <- paste0(linha_atual, ifelse(nchar(linha_atual) > 0, caractere_para_pular, ""), palavra)
       } else {
-        frase_final = paste(frase_final, linha_atual, "\n", sep = "")
-        linha_atual = palavra
+        frase_final <- paste0(frase_final, linha_atual, "\n")
+        linha_atual <- palavra
       }
     }
-    frase_final = paste(frase_final, linha_atual, sep = "")
-    frase <- as.factor(frase)
+    
+    # Adiciona a última linha ao resultado final
+    frase_final <- paste0(frase_final, linha_atual)
     return(frase_final)
-  } else {
-    return(frase)
-  }
+  } 
+  
+  # Retorna a frase original se não ultrapassar o comprimento máximo
+  return(frase)
 }
 
+# Teste com uma frase longa
+frase_longa <- "Esta é uma frase muito longa que deve ser quebrada em várias linhas para melhor visualização."
+adicionar_quebra_de_linha(frase_longa, 50)
 
-frase_longa = "Esta é uma frase muito longa que deve ser quebrada em várias linhas para melhor visualização."
-adicionar_quebra_de_linha(frase_longa,50)
+# Teste com uma frase longa e caractere de separação diferente
+frase_longa <- "Esta_é_uma_frase_muito_longa_que_deve_ser_quebrada_em_várias_linhas_para_melhor_visualização."
+adicionar_quebra_de_linha(frase_longa, 50, '_')
 #df$coluna = sapply(df$coluna, function(x) adicionar_quebra_de_linha(x, 40))
 ```
 
