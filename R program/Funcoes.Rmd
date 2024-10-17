@@ -157,7 +157,7 @@ cont = function(df, variavel){
     adorn_pct_formatting(2) %>% as.data.frame()
 }
 
-cont(dff, 'desfecho')
+#-#cont(dff, 'desfecho')
 
 tabelinha_ajust = function(tabelinha){
   nomes_colunas = colnames(tabelinha)
@@ -943,8 +943,8 @@ metricas_de_avaliacao_regressao = function(modelo){
     # }
     
 
-modelo_lm2 <- lm(score_esc ~ as.numeric(Ano) + Unidade + Regional + Estado, data = df_score)
-metricas_de_avaliacao_regressao(modelo_lm2)
+#modelo_lm2 <- lm(score_esc ~ as.numeric(Ano) + Unidade + Regional + Estado, data = df_score)
+#metricas_de_avaliacao_regressao(modelo_lm2)
 
 
 # modelo_lm0 <- lm(response ~ fixed_effects, data = dff)

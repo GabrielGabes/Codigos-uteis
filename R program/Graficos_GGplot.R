@@ -34,8 +34,8 @@ cont_grafi = function(df, coluna){
     labs(x=NULL, y="frequenciauency (%)", title =NULL)
 }
 
-cont_grafi(dff, 'desfecho')
-cont_grafi(dff, 'tratamentos')
+#-#cont_grafi(dff, 'desfecho')
+#-#cont_grafi(dff, 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)
 
 
@@ -69,7 +69,7 @@ conti_grafi = function(df, coluna_x, coluna_y, sentido_percent='col'){
     labs(x=NULL, y='Frequency (%)', title=NULL, fill=NULL)
 }
 
-conti_grafi(dff, 'desfecho', 'tratamentos')
+#-#conti_grafi(dff, 'desfecho', 'tratamentos')
 #ggsave("nome_grafico.png", height=15, width=20, units="cm", dpi= 600)
 
 
@@ -105,8 +105,8 @@ box_vin_jit = function(df, col_num, col_cat, arredondamento = 0){
     labs(x=NULL, y=NULL, title=NULL)
 }
 
-box_vin_jit(dff, 'var_num', 'tratamentos')
-box_vin_jit(dff, 'var_num', 'desfecho') #+ coord_flip()
+#-#box_vin_jit(dff, 'var_num', 'tratamentos')
+#-#box_vin_jit(dff, 'var_num', 'desfecho') #+ coord_flip()
 #ggsave("nome_grafico.png", height=10, width=10.5, units="cm", dpi= 600)
 
 
@@ -133,8 +133,8 @@ box_pareado = function(df_selecionado, palavra_padrao_da_coluna_analisada){
     theme(legend.position = "none")
 }
 
-box_pareado(dff[c('momento_1', 'momento_2', 'momento_3')], 'momento')
-box_pareado(dff[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
+#-#box_pareado(dff[c('momento_1', 'momento_2', 'momento_3')], 'momento')
+#-#box_pareado(dff[c('momento_1', 'momento_2', 'momento_3', 'tratamentos')], 'momento') + facet_grid(~tratamentos)
 
 
 ## ----Grafico de Dinamite------------------------------------------------------------
@@ -166,8 +166,8 @@ dinamite = function(df, col_num, col_cat){
     labs(x=NULL, y= "Mean", title=NULL) #+ coord_flip()
 }
 
-dinamite(dff, 'momento_3', 'desfecho')
-dinamite(dff, 'momento_3', 'tratamentos')
+#-#dinamite(dff, 'momento_3', 'desfecho')
+#-#dinamite(dff, 'momento_3', 'tratamentos')
 
 
 ## ----Grafico de Erro----------------------------------------------------------------
@@ -194,8 +194,8 @@ grafico_de_erro = function(df, col_num, col_cat){
     labs(x=NULL, y= "Mean", title=NULL)
 }
 
-grafico_de_erro(dff, 'momento_3', 'desfecho')
-grafico_de_erro(dff, 'momento_3', 'tratamentos')
+#-#grafico_de_erro(dff, 'momento_3', 'desfecho')
+#-#grafico_de_erro(dff, 'momento_3', 'tratamentos')
 
 
 ## ----Grafico de Densidade-----------------------------------------------------------
@@ -217,7 +217,7 @@ densidade_grafi = function(df, col_num, col_cat){
     labs(x=NULL, y='Probability Density', fill=NULL)
 }
 
-densidade_grafi(dff, 'var_num')
+#-#densidade_grafi(dff, 'var_num')
 
 
 ## ----Grafico de Densidade por Grupos------------------------------------------------
@@ -237,9 +237,9 @@ densidade_grafi = function(df, col_num, col_cat){
     labs(x=NULL, y='Probability Density', fill=NULL)
 }
 
-densidade_grafi(dff, 'momento_3', 'desfecho')
-densidade_grafi(dff, 'momento_3', 'desfecho') + facet_grid(~desfecho)
-densidade_grafi(dff, 'momento_3', 'tratamentos') + facet_grid(~tratamentos)
+#-#densidade_grafi(dff, 'momento_3', 'desfecho')
+#-#densidade_grafi(dff, 'momento_3', 'desfecho') + facet_grid(~desfecho)
+#-#densidade_grafi(dff, 'momento_3', 'tratamentos') + facet_grid(~tratamentos)
 
 
 ## -----------------------------------------------------------------------------------
@@ -252,9 +252,9 @@ retorne_p_ajust = function(valor){
   }
 }
 
-retorne_p_ajust(pval_string(0.00002))
-retorne_p_ajust(pval_string(0.399949))
-retorne_p_ajust(pval_string(0.04))
+#-#retorne_p_ajust(pval_string(0.00002))
+#-#retorne_p_ajust(pval_string(0.399949))
+#-#retorne_p_ajust(pval_string(0.04))
 
 
 ## ----Densidade, Teste de Normalidade------------------------------------------------
@@ -304,12 +304,12 @@ teste_normalidade = function(df, coluna, qtd_bins=20, cor_esc=1, plot_qqplot = T
   }
 }
 
-teste_normalidade(dff, 'var_num', cor_esc = 1)
-teste_normalidade(dff, 'var_num', cor_esc = 2) #+ facet_grid(~desfecho) + labs(subtitle = NULL)
-teste_normalidade(dff, 'var_num', cor_esc = 3) #+ facet_grid(tratamentos~.) + labs(subtitle = NULL)
-teste_normalidade(dff, 'var_num', cor_esc = 4)
-teste_normalidade(dff, 'var_num', cor_esc = 5)
-teste_normalidade(dff, 'var_num', cor_esc = 6) + plot_annotation(title = 'teste')
+#-#teste_normalidade(dff, 'var_num', cor_esc = 1)
+#-#teste_normalidade(dff, 'var_num', cor_esc = 2) #+ facet_grid(~desfecho) + labs(subtitle = NULL)
+#-#teste_normalidade(dff, 'var_num', cor_esc = 3) #+ facet_grid(tratamentos~.) + labs(subtitle = NULL)
+#-#teste_normalidade(dff, 'var_num', cor_esc = 4)
+#-#teste_normalidade(dff, 'var_num', cor_esc = 5)
+#-#teste_normalidade(dff, 'var_num', cor_esc = 6) + plot_annotation(title = 'teste')
 
 
 ## ----Grafico de diagnostico de modelos lineares-------------------------------------
@@ -418,14 +418,14 @@ glm_diagnostic <- function(modelo) {
   return(p4)
 }
 
-modelo = glm(desfecho ~ fixed_effects + group, data = dff, family = binomial())
-glm_diagnostic(modelo)
+#-#modelo = glm(desfecho ~ fixed_effects + group, data = dff, family = binomial())
+#-#glm_diagnostic(modelo)
 
-modelo_lm = lm(desfecho_num ~ var_num, data=dff)
-lm_diagnostic(modelo_lm)
+#-#modelo_lm = lm(desfecho_num ~ var_num, data=dff)
+#-#lm_diagnostic(modelo_lm)
 
-modelo_lmer <- lmerTest::lmer(response ~ fixed_effects + (1|group), data = dff)
-lm_diagnostic(modelo_lmer)
+#-#modelo_lmer <- lmerTest::lmer(response ~ fixed_effects + (1|group), data = dff)
+#-#lm_diagnostic(modelo_lmer)
 
 
 #### ALTERNATIVAS:
@@ -494,11 +494,11 @@ plotar_boxplot_residuos <- function(lista_modelos, arredondamento = 2) {
 }
 
 # Exemplo de uso
-modelo_lm0 <- lm(response ~ fixed_effects, data = dff)
-modelo_lm <- lm(response ~ fixed_effects + group, data = dff)
-modelo <- lmer(response ~ fixed_effects + (1|group), data = dff)
+#-#modelo_lm0 <- lm(response ~ fixed_effects, data = dff)
+#-#modelo_lm <- lm(response ~ fixed_effects + group, data = dff)
+#-#modelo <- lmer(response ~ fixed_effects + (1|group), data = dff)
 
-plotar_boxplot_residuos(list(modelo_lm0, modelo_lm, modelo))
+#-#plotar_boxplot_residuos(list(modelo_lm0, modelo_lm, modelo))
 
 
 
@@ -580,13 +580,4 @@ fore_plot = function(tabela, titulo = NULL){
   #return(grid.arrange(plot1, tab1, tab2, layout_matrix = lay))
   return(plot1)
 }
-
-
-## -----------------------------------------------------------------------------------
-
-
-## -----------------------------------------------------------------------------------
-
-
-## -----------------------------------------------------------------------------------
 

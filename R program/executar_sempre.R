@@ -16,6 +16,40 @@ options(warn = -1)
 if(!require(pacman)) install.packages("pacman")
 library(pacman)
 
+######################################################################################
+
+pacman::p_load(clipr) # captura dos dados => write_clip
+capture = function(tabela, col_names=TRUE, pontuacao=','){
+  tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
+}
+
+######################################################################################
+
+#### BIBLIOTECAS SEMPRE USADAS ####
+pacman::p_load(
+  readxl, #Importar arquvios excel ==> read_excel(".xlsx)
+  skimr, #resumo dos dados do dataframe => skim(df)
+  
+  reshape2, #manipulação de formato de dataframe
+  stringr, #manipulação de strings
+  vegan, #transformação de variaveis
+  forcats, #manipulação de factor
+  
+  # Outros pacotes
+  naniar, #analise de dados ausentes
+  DescTools #canivete suiço
+)
+
+#### Outros Pacotes ####
+pacman::p_load(
+  tidyr, #manipulação de dados #pivot_longer
+  tibble, #manipulação de dados
+  broom, #tem a ver com a bibli tidy()
+  devtools #criar e baixar pacotes de outros usuarios
+)
+
+#########################################
+
 #### Carregando meu pacote de analise ####
 # dependents Packages
 pacman::p_load(
@@ -32,7 +66,6 @@ pacman::p_load(
   magrittr,
   tidyr
 )
-#########################################
 
 escolha = 1
 if (escolha == 1){ ## MODO DIRETO
@@ -71,17 +104,6 @@ if (escolha == 1){ ## MODO DIRETO
     source(file_url, local = TRUE)
   }
 }
-
-######################################################################################
-
-#### Outros Pacotes ####
-pacman::p_load(
-  tidyr, #manipulação de dados #pivot_longer
-  tibble, #manipulação de dados
-  broom, #tem a ver com a bibli tidy()
-  devtools #criar e baixar pacotes de outros usuarios
-)
-
 ######################################################################################
 
 ## Criando dataframe ficticio para testes
@@ -90,35 +112,15 @@ source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerado
 
 ######################################################################################
 
+
 #### Compilando arquivos .RMD ####
 pacman::p_load(knitr)
 #knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
 #knit("~/Codigos úteis/R program/Graficos_GGplot.Rmd")
+library(lmerTest)
 source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/R%20program/Funcoes.R')
 source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/R%20program/Graficos_GGplot.R')
 
 ######################################################################################
-
-#### BIBLIOTECAS SEMPRE USADAS ####
-pacman::p_load(
-  readxl, #Importar arquvios excel ==> read_excel(".xlsx)
-  skimr, #resumo dos dados do dataframe => skim(df)
-  
-  reshape2, #manipulação de formato de dataframe
-  stringr, #manipulação de strings
-  vegan, #transformação de variaveis
-  forcats, #manipulação de factor
-  
-  # Outros pacotes
-  naniar, #analise de dados ausentes
-  DescTools #canivete suiço
-)
-
-######################################################################################
-
-pacman::p_load(clipr) # captura dos dados => write_clip
-capture = function(tabela, col_names=TRUE, pontuacao=','){
-  tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
-}
 
 print('AMBIENTE PRONTO PARA TRABALHO')
