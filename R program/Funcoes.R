@@ -1,4 +1,4 @@
-## ----BIBLIOTECAS USADAS NAS FUNÇÕES--------------------------------------------------------------
+## ----BIBLIOTECAS USADAS NAS FUNÇÕES-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 pacman::p_load(
 dplyr, # manipulação de dados
@@ -9,14 +9,14 @@ effsize # tamanho do efeito d'cohen
 
 
 
-## ----Capturar tabelas ou medidas-----------------------------------------------------------------
+## ----Capturar tabelas ou medidas----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 pacman::p_load(clipr) # captura dos dados => write_clip
 capture = function(tabela, col_names=TRUE, pontuacao=','){
   tabela %>% print() %>% write_clip(dec = pontuacao, col.names = col_names)
 }
 
 
-## ----Retornar valor de p-------------------------------------------------------------------------
+## ----Retornar valor de p------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 retorne_p = function(valor){ 
   valor_str = formatC(valor, format = "f", digits = 6)
   if (valor < 0.05){
@@ -41,7 +41,7 @@ retorne_p(0.002)
 retorne_p(0.00002)
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 retorne_p_ajust = function(valor){
   if (valor == "< 0.001"){
     "P-Value < 0.001"
@@ -56,7 +56,7 @@ retorne_p_ajust(retorne_p(0.399949))
 retorne_p_ajust(retorne_p(0.04))
 
 
-## ----Aplicação em uma coluna inteira-------------------------------------------------------------
+## ----Aplicação em uma coluna inteira------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Aplicando a função a todos elementos da coluna
 apply_retorne_p = function(df, coluna) {
   df[[coluna]] = sapply(df[[coluna]], function(x) {
@@ -70,7 +70,7 @@ apply_retorne_p = function(df, coluna) {
 }
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 rround = function(valor, digitos){
   if (abs(valor) < 0.01 || abs(valor) > 1000){
     if (abs(valor) < 0.01){formatC(0, format = "f", digits = digitos)}
@@ -87,7 +87,7 @@ rround(45.5151, 2)
 rround(5115156, 2)
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 rround = function(valor, digitos){
   if (abs(valor) < 0.01 && abs(valor) > 0.0009) {formatC(valor, format = "f", digits = 3)} 
   else if (valor == 0){"0.00"}
@@ -106,7 +106,7 @@ rround(5115156, 2)
 rround(0.0000000041212, 2)
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Aplicando a função a todos elementos da coluna 
 apply_rround = function(df, coluna, digitos = 2){
   df[[coluna]] = sapply(df[[coluna]], function(x) {
@@ -131,11 +131,11 @@ apply_rround2 = function(vetor, digitos = 2){
 }
 
 
-## ----Pacotes usados------------------------------------------------------------------------------
+## ----Pacotes usados-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 library(janitor) #tabela de contigencia => tabyl, adorn_pct_formatting, adorn_totals, adorn_percentages, adorn_ns
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Tabela contagem simples
 cont = function(df, variavel){
   df %>% tabyl(.data[[variavel]], show_na = FALSE) %>% 
@@ -156,7 +156,7 @@ tabelinha_ajust = function(tabelinha){
 }
 
 
-## ----Critério de Fisher--------------------------------------------------------------------------
+## ----Critério de Fisher-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Função que verifica se é melhor aplicavel o teste de fisher para testar a hipotese entre duas variaveis categoricas
 fisher_criterio = function(df, var1, var2){
   length1 = length(levels(as.factor(df[[var1]])))
@@ -176,7 +176,7 @@ fisher_criterio = function(df, var1, var2){
 }
 
 
-## ----Tabela contingencia-------------------------------------------------------------------------
+## ----Tabela contingencia------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
   #sentido_porcent => #col, row
   tabela = df %>% 
@@ -227,7 +227,7 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
 conti(dff, "desfecho", "tratamentos")
 
 
-## ----Teste de normalidade------------------------------------------------------------------------
+## ----Teste de normalidade-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Maneira antiga
 # library(RVAideMemoire) # shapiro por grupo ==> byf.shapiro(numerico~categorico, df)
 # esse pacote é bom procurar saber mais dps, contem teste de levene | comparações múltiplas usando o teste t de Student com correção para múltiplos testes (pairwise.t.test) | ANOVA ajustada para heterocedasticidade (anova.hetero())
@@ -290,7 +290,7 @@ normalidade_por_grupo_criterio = function(df, col_num, col_cat){
 }
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 summary_numerico_parametrico = function(df, col_num){
   tabela = df %>%
     filter(!is.na(!!sym(col_num))) %>%
@@ -377,7 +377,7 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
 summary_numerico_por_grupo_parametrico(dff, "var_num", "desfecho", 'T')
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 library(car)
 teste_homogeneidade = leveneTest(var_num ~ desfecho, dff, center=mean)
 teste_homogeneidade
@@ -394,10 +394,10 @@ print(teste_usado)
 
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 summary_numerico_n_parametrico = function(df, col_num){
   tabela = df %>%
     filter(!is.na(!!sym(col_num))) %>%
@@ -487,7 +487,7 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
 summary_numerico_por_grupo_n_parametrico(dff, "var_num", "desfecho", 'T')
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 summary_numerico_por_grupo = function(df, col_num, col_cat){
   if (normalidade_por_grupo_criterio(df, col_num, col_cat)){
     summary_numerico_por_grupo_parametrico(df, col_num, col_cat) %>% return()
@@ -499,7 +499,7 @@ summary_numerico_por_grupo = function(df, col_num, col_cat){
 summary_numerico_por_grupo(dff, "var_num", "desfecho")
 
 
-## ----Medidas de modelo de Regressão Logistica----------------------------------------------------
+## ----Medidas de modelo de Regressão Logistica---------------------------------------------------------------------------------------------------------------------------------------------------------------
 analise_mod = function(modelo){
   estimadores = as.data.frame(summary(modelo)$coefficients)
   odds = as.data.frame((exp(cbind(OR= coef(modelo), confint(modelo)))))
@@ -567,7 +567,7 @@ analise_mod_antiga = function(modelo){
 }
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 analise_fisher = function(teste){
   odds = rround(teste$estimate, 2)
   ic_0 = rround(teste$conf.int[1], 2)
@@ -578,7 +578,7 @@ analise_fisher = function(teste){
 analise_fisher(fisher.test(table(dff$desfecho, dff$genero), conf.int = TRUE))
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Função para adicionar quebras de linha em frases longas
 adicionar_quebra_de_linha <- function(frase, comprimento_maximo = 20, caractere_para_pular = ' ') {
   frase <- as.character(frase)
@@ -621,7 +621,7 @@ adicionar_quebra_de_linha(frase_longa, 50, '_')
 #df$coluna = sapply(df$coluna, function(x) adicionar_quebra_de_linha(x, 40))
 
 
-## ----BIBLIOTECAS NÃO USADAS----------------------------------------------------------------------
+## ----BIBLIOTECAS NÃO USADAS---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #library(RcmdrMisc) #summary diferenciado ==> numSummary()
 # #bibliotecas para extrair descrições das variaveis
@@ -662,11 +662,11 @@ adicionar_quebra_de_linha(frase_longa, 50, '_')
 # library(tableone) #criação de tabelas
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #library(gmodels) #analise de residuo em tabelas de cruzamentos categorica - TESTE PÓS HOC (de qui-quadrado)
 
 
-## ----Função criação e avaliação de modelos de classificação--------------------------------------
+## ----Função criação e avaliação de modelos de classificação-------------------------------------------------------------------------------------------------------------------------------------------------
 library(caret)
 library(DescTools)
 library(car)
@@ -792,7 +792,7 @@ metricas_de_avaliacao_glm(modelo_misto) %>% round(4)
 
 
 
-## ----Função criação e avaliação de modelos regressão---------------------------------------------
+## ----Função criação e avaliação de modelos regressão--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # library(lmerTest) # é melhor que library(lme4)
 # library(MuMIn)
@@ -929,7 +929,7 @@ metricas_de_avaliacao_regressao = function(modelo){
 
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Função de normalização
 normalize <- function(x) {
@@ -937,8 +937,8 @@ normalize <- function(x) {
 }
 
 # Aplicar a normalização à coluna
-normalize(df$coluna)
-scale(df$coluna)
+normalize(dff$desfecho_num)
+scale(dff$desfecho_num)
 
 # Ver o resultado
 print(df)
@@ -946,7 +946,7 @@ print(df)
 
 
 
-## ----Cross Table Bioestatistica------------------------------------------------------------------
+## ----Cross Table Bioestatistica-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 df = df_ficticio()
 
 cross_table = function(df, coluna_analisada, sentido_percent='col', apenas_fisher=F, lista_colunas=names(df)){
@@ -998,7 +998,7 @@ cross_table(dff, 'desfecho')
 cross_table(dff, 'group', 'row')
 
 
-## ------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 cross_table_glm = function(df, coluna_analisada){
 
 lista_coluna = names(df)[which(!(names(df) %in% c(coluna_analisada)))] 
@@ -1041,4 +1041,7 @@ tabelona %>% capture()
 }
 
 cross_table_glm(dff, 'desfecho')
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+print('FIMMMM FUNCOES')
 

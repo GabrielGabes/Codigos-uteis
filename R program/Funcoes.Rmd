@@ -966,8 +966,8 @@ normalize <- function(x) {
 }
 
 # Aplicar a normalização à coluna
-normalize(df$coluna)
-scale(df$coluna)
+normalize(dff$desfecho_num)
+scale(dff$desfecho_num)
 
 # Ver o resultado
 print(df)
@@ -1071,5 +1071,8 @@ tabelona %>% capture()
 }
 
 cross_table_glm(dff, 'desfecho')
+```
+```{r}
+print('FIMMMM FUNCOES')
 ```
 
