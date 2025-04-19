@@ -14,6 +14,8 @@ Modelos lineares fazem suposições específicas sobre os dados:
 Violando essas suposições, os resultados podem ser enganosos e a eficácia do modelo reduzida.
 
 ```{r (Só cabe a regressão linear simples) Relação linear entre as variaveis}
+library(ggpubr)
+
 
 plot(df$idade, df$altura)
 
@@ -87,7 +89,7 @@ plot(modelo1)
 Se os resíduos seguem uma distribuição normal, então os testes baseados na distribuição t de Student para os coeficientes são válidos.
 ```{r Normalidade dos Residuos}
 
-df$residuos <- resid(modelo)
+residuos <- resid(modelo)
 
 #### Teste de hipotese de normalidade ####
 shapiro.test(df$residuos)

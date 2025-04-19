@@ -112,11 +112,11 @@ teste_hip = aov(var_num ~ tratamentos, data=df)
 teste_hip %>% summary()
 ```
 
-```{r Dunnet}
+```{r Pós Hoc Dunnet}
 multcomp::glht(teste_hip, linfct = mcp(tratamentos = "Dunnett")) %>% summary()
 ```
 
-```{r Tukey}
+```{r Pós Hoc Tukey}
 TukeyHSD(teste_hip)
 ```
 
@@ -127,12 +127,12 @@ kruskal.test(var_num ~ tratamentos, data=df)
 ```
 
 
-```{r Dunn}
+```{r Pós Hoc Dunn}
 dunn.test::dunn.test(df$var_num, df$tratamentos, method="bonferroni")
 ```
 
 
-```{r Bonferroni}
+```{r Pós Hoc Bonferroni}
 #qualquer teste
 pairwise.t.test(df$var_num, df$tratamentos, p.adjust.method = "bonferroni", data=df)
 ```

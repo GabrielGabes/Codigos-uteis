@@ -14,9 +14,10 @@ chart.Correlation(dff[sapply(dff, is.numeric)], histogram=TRUE, pch=19)
 
 ```{r}
 cor.test(dff$idade, dff$peso, use = "complete.obs") #%>% tidy() %>% .$p.value %>% pval_string()
+# cor.test(dff$idade, dff$idade, use = "complete.obs") #%>% tidy() %>% .$p.value %>% pval_string()
 ```
 
-```{r}
+```{r calculando o valor de p para correlação maior que 0.5}
 cor.hip = function(x, y, rho_null = 0.5, use = 'everything', method = 'pearson'){
   cor_obs = cor(x, y, use = use, method = method)
   
@@ -43,10 +44,58 @@ cor.hip = function(x, y, rho_null = 0.5, use = 'everything', method = 'pearson')
 }
 
 cor.hip(dff$idade, dff$peso)
+cor.hip(dff$idade, dff$idade)$p.value %>% retorne_p()
+```
+```{r Teste hipotese para analise numcat}
+group_normality_test <- function(df, col_num, col_cat, type_response = 0) {
+
+  # Realizar o teste de normalidade (Shapiro ou KS) para cada grupo
+  resultados <- by(df[[col_num]], df[[col_cat]], function(subset) {
+    if (length(subset) > 5000) {
+      # Aplicar o teste de Kolmogorov-Smirnov se o tamanho do subset for maior que 5000
+      test_result <- ks.test(subset, "pnorm", mean(subset, na.rm = TRUE), sd(subset, na.rm = TRUE))
+      list(test = test_result, test_type = "ks", n = length(subset))  # Armazenar resultado e tipo de teste
+    } else {
+      # Aplicar o teste de Shapiro-Wilk se o tamanho do subset for menor ou igual a 5000
+      test_result <- shapiro.test(subset)
+      list(test = test_result, test_type = "shapiro", n = length(subset))  # Armazenar resultado e tipo de teste
+    }
+  })
+
+  # Extrair p-valores, tipo de teste e contagem de observações
+  p_values <- sapply(resultados, function(result) result$test$p.value)
+  test_types <- sapply(resultados, function(result) result$test_type)
+  counts <- sapply(resultados, function(result) result$n)
+
+  # Verificar se algum p-valor indica não normalidade
+  verificacao <- any(p_values < 0.05)
+
+  # Criar a tabela com grupo, p-valor, tipo de teste e contagem de observações
+  tabela <- data.frame(
+    group = names(p_values),
+    p_value = p_values,
+    test_used = test_types,
+    n_observations = counts
+  )
+  
+  rownames(tabela) <- NULL  # Remover os nomes das linhas
+
+  # Retornar os resultados com base no parâmetro type_response
+  if (type_response == 0) {
+    return(tabela)  # Retorna a tabela com os resultados detalhados
+  } else if (type_response == 1) {
+    # Retornar verificação se algum grupo falha no teste de normalidade
+    return(verificacao)
+  }
+}
+
+df = df_ficticio(3*5000)
+group_normality_test(df, 'idade', 'group1')
+group_normality_test(df, 'idade', 'group1', 1)
 ```
 
 
-```{r}
+```{r analise numcat}
 teste_num_cat = function(df, col_num, col_cat){
   
   qtd_levels = length(levels(as.factor(df[[col_cat]])))
@@ -98,7 +147,6 @@ teste_num_cat = function(df, col_num, col_cat){
        test = teste_usado)
 }
 
-
 teste_num_cat(dff, 'desfecho_num', 'asa')
 
 n = 100
@@ -115,59 +163,8 @@ df$numerica[filtro_C] = runif(n)
 teste_num_cat(df, 'numerica', 'cat3')
 ```
 
-# funções reais
 
-```{r}
-group_normality_test <- function(df, col_num, col_cat, type_response = 0) {
-
-  # Realizar o teste de normalidade (Shapiro ou KS) para cada grupo
-  resultados <- by(df[[col_num]], df[[col_cat]], function(subset) {
-    if (length(subset) > 5000) {
-      # Aplicar o teste de Kolmogorov-Smirnov se o tamanho do subset for maior que 5000
-      test_result <- ks.test(subset, "pnorm", mean(subset, na.rm = TRUE), sd(subset, na.rm = TRUE))
-      list(test = test_result, test_type = "ks", n = length(subset))  # Armazenar resultado e tipo de teste
-    } else {
-      # Aplicar o teste de Shapiro-Wilk se o tamanho do subset for menor ou igual a 5000
-      test_result <- shapiro.test(subset)
-      list(test = test_result, test_type = "shapiro", n = length(subset))  # Armazenar resultado e tipo de teste
-    }
-  })
-
-  # Extrair p-valores, tipo de teste e contagem de observações
-  p_values <- sapply(resultados, function(result) result$test$p.value)
-  test_types <- sapply(resultados, function(result) result$test_type)
-  counts <- sapply(resultados, function(result) result$n)
-
-  # Verificar se algum p-valor indica não normalidade
-  verificacao <- any(p_values < 0.05)
-
-  # Criar a tabela com grupo, p-valor, tipo de teste e contagem de observações
-  tabela <- data.frame(
-    group = names(p_values),
-    p_value = p_values,
-    test_used = test_types,
-    n_observations = counts
-  )
-  
-  rownames(tabela) <- NULL  # Remover os nomes das linhas
-
-  # Retornar os resultados com base no parâmetro type_response
-  if (type_response == 0) {
-    return(tabela)  # Retorna a tabela com os resultados detalhados
-  } else if (type_response == 1) {
-    # Retornar verificação se algum grupo falha no teste de normalidade
-    return(verificacao)
-  }
-}
-
-df = df_ficticio(3*5000)
-group_normality_test(df, 'idade', 'group1')
-group_normality_test(df, 'idade', 'group1', 1)
-```
-
-
-
-```{r}
+```{r analise numcat com ajuste de fisher-pitman}
 library(coin)
 
 teste_num_cat = function(df, col_num, col_cat){
@@ -343,7 +340,7 @@ print(result_matrix)
 ```{r}
 # Definindo as variáveis
 x <- dff$idade
-y <- dff$peso
+y <- dff$idade
 
 # Calculando a correlação observada
 cor_obs <- cor(x, y, use = "complete.obs")

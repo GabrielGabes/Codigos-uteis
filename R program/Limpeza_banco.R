@@ -10,6 +10,11 @@ normalize_column_names <- function(df) {
   colnames(df) <- tolower(colnames(df))
   # Substituir espaços por underscores
   colnames(df) <- str_replace_all(colnames(df), " ", "_")
+  
+  # -----------------------------------------------------
+  colnames(df) <- gsub("%", "taxa_", colnames(df)) # retirando porcentagens
+  # -----------------------------------------------------
+  
   # Remover caracteres especiais, mantendo apenas letras, números e underscores
   colnames(df) <- gsub("[^a-z0-9_]", "", colnames(df)) # nome <- stri_trans_general(nome, "Latin-ASCII")  # Remover caracteres especiais
   # Substituir múltiplos underscores consecutivos por um único underscore
@@ -22,12 +27,23 @@ normalize_column_names <- function(df) {
 
 ####################################################
 
+# Função para converter todas as colunas para o tipo character
+convert_to_character <- function(df) {
+  df[] <- lapply(df, as.character)
+  return(df)
+}
 
 ####################################################
 
-
-####################################################
-
+# Função para remover outliers usando IQR
+remove_outliers <- function(dados) {
+  Q1 <- quantile(dados, 0.25)
+  Q3 <- quantile(dados, 0.75)
+  IQR <- Q3 - Q1
+  limite_inferior <- Q1 - 1.5 * IQR
+  limite_superior <- Q3 + 1.5 * IQR
+  dados[dados >= limite_inferior & dados <= limite_superior]
+}
 
 ####################################################
 

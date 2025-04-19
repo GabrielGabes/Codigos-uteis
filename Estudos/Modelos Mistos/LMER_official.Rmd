@@ -1,5 +1,5 @@
 ```{r Banco de dados ficticio}
-source("~/Codigos úteis/R program/df_ficticio.R", echo=F)
+source("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/Gerador de Dados Ficticios/dataframe.R", echo=F)
 df = dff
 ```
 
@@ -58,6 +58,34 @@ ggplot(df, aes(x = fixed_effects, y = response, color = group)) +
   geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
   labs(title = "Modelo Linear Simples", x='x', y='y', color='groups')
 ggsave("Modelo Linear Simples.jpg", height=10, width=15, units="cm", dpi= 600)
+```
+
+```{r Modelo Linear Simples com intercepto 0}
+modelo_lm <- lm(response ~ fixed_effects - 1, data = df)
+
+# Primeira Avaliação
+modelo_lm %>% summary()
+modelo_lm %>% metricas_de_avaliacao_regressao()
+
+# Analise dos Residuos
+# modelo_lm %>% lm_diagnostic()
+
+# Coeficientes
+cbind(Estimate = coef(modelo_lm), confint(modelo_lm)) %>% round(2)
+
+# Previsões
+df$pred = modelo_lm %>% predict()
+
+# Normalidade dos Residuos
+df$residuals = modelo_lm %>% residuals()
+teste_normalidade(df, 'residuals')
+
+# Grafico de Previsão
+ggplot(df, aes(x = fixed_effects, y = response)) +
+  geom_point(alpha=0.5, size=2.5) +
+  geom_smooth(aes(y = pred), method = "lm", se=TRUE, size = 0.75) +
+  labs(title = "Modelo Linear Simples Intecepto 0", x='x', y='y', color='groups')
+# ggsave("Modelo Linear Simples Intecepto 0.jpg", height=10, width=15, units="cm", dpi= 600)
 ```
 
 ```{r Modelo com Interceptos Aleatórios}

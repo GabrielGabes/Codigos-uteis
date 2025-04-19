@@ -1,6 +1,5 @@
 ```{r df ficticio}
 ##source("~/Codigos úteis/R program/df_ficticio.R", echo=TRUE)
-##source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/df_ficticio.R')
 #dff
 ```
 

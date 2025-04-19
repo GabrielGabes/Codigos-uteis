@@ -1,5 +1,5 @@
 ```{r df ficticio}
-source("~/Codigos úteis/Gerador de Dados Ficticios/dataframe.R", echo=F)
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/executar_sempre.R')
 df
 df = df[c('desfecho','desfecho_num','idade','idade_media','altura','alto_media','peso','imc','obeso','momento_1','momento_2','momento_3',
           'genero','tabagismo','doenca_cardiaca')]

@@ -1,0 +1,123 @@
+```{r df ficticio}
+source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/R%20program/executar_sempre.R')
+df
+df = df[c('desfecho','desfecho_num','idade','idade_media','altura','alto_media','peso','imc','obeso','momento_1','momento_2','momento_3',
+          'genero','tabagismo','doenca_cardiaca')]
+df
+```
+
+```{r}
+avaliacao_linear = function(df, variavel_dependente, variavel_independente, intercepto=T){
+
+  ##############################################################################
+  if (intercepto == T){
+    formula_texto = paste(variavel_dependente, "~", variavel_independente)
+  } else {
+    formula_texto = paste(variavel_dependente, "~", variavel_independente, "- 1")
+  }
+  
+  ##############################################################################
+  formula_do_modelo = as.formula(formula_texto)
+  modelo = lm(formula = formula_do_modelo, data = df)
+  
+  ##############################################################################
+  # Fórmula da regressão
+  # Verificar os últimos 3 caracteres
+  if (substr(formula_texto, nchar(formula_texto) - 2, nchar(formula_texto)) == "- 1") {
+    equacao <- paste0("y = ", statgsa::num_string(coef(modelo)[1], 4), "x")
+  } else {
+    equacao <- paste0("y = ", statgsa::num_string(coef(modelo)[1], 4), " + ", statgsa::num_string(coef(modelo)[2], 4), "x")
+  }
+  
+  ##############################################################################
+  metricas = modelo %>% metricas_de_avaliacao_regressao()
+  nomes_metricas <- c("VARIAVEIS", "EQUACAO", 
+                      "MAE", "MSE", "RMSE", "MAPE", 
+                      "AIC", "BIC", 
+                      "R2", "R2_adj", 
+                      "VIF", "Status")
+  
+  ##############################################################################
+  df_metricas <- data.frame(formula_texto, equacao, t(metricas))
+  colnames(df_metricas) <- nomes_metricas
+  
+  ##############################################################################
+  df_metricas$p_value = tidy(modelo)$p.value[1] %>% retorne_p()
+  
+  ##############################################################################
+  # Correlações
+  cor_pearson <- cor.test(df[[variavel_dependente]], 
+                                 df[[variavel_independente]], 
+                                 method='pearson')$estimate
+  cor_spearman <- cor.test(df[[variavel_dependente]], 
+                                  df[[variavel_independente]], 
+                                  method='spearman')$estimate
+  
+  df_metricas$cor_pearson = cor_pearson
+  df_metricas$cor_spearman = cor_spearman
+  ##############################################################################
+  ##############################################################################
+  
+  df_metricas$MSE = NULL
+  df_metricas$RMSE = NULL
+  df_metricas$MAPE = NULL
+  
+  df_metricas$AIC = NULL
+  df_metricas$BIC = NULL
+  
+  df_metricas$VIF = NULL
+  df_metricas$Status = NULL
+  
+  ######################################
+  colunas_numericas <- names(df_metricas)[sapply(df_metricas, is.numeric)]
+  for (coluna in colunas_numericas){
+    df_metricas = apply_rround(df_metricas, coluna, 3)
+  }
+
+  ##############################################################################
+  # IQR_E
+  predictions = predict(modelo)
+  diff = abs(df[[variavel_dependente]] - predictions)
+  mediana <- median(diff) %>% statgsa::num_string(2)
+  q1 <- quantile(diff, 0.25) %>% statgsa::num_string(2)
+  q3 <- quantile(diff, 0.75) %>% statgsa::num_string(2)
+  mini <- min(diff) %>% statgsa::num_string(2)
+  maxi <- max(diff) %>% statgsa::num_string(2)
+  df_metricas$IQR_E = paste0(mediana, ' [', q1, '; ', q3, ']')
+  df_metricas$minmaxE = paste0('[', mini, '; ', maxi, ']')
+  
+  ##############################################################################
+  df_metricas %>% t() %>% return()
+}
+
+avaliacao_linear2 = function(df, variavel_dependente, variavel_independente){
+  t1 = avaliacao_linear(df, variavel_dependente, variavel_independente)
+  t2 = avaliacao_linear(df, variavel_dependente, variavel_independente, F)
+  cbind(t1, t2) %>% return()
+}
+
+variavel_dependente = 'desfecho_num'
+variavel_independente = 'idade'
+avaliacao_linear2(df, variavel_dependente, variavel_independente)
+
+##############################################################################
+df$pred = modelo %>% predict()
+p = ggplot(df, aes(x= !!sym(variavel_independente), y= !!sym(variavel_dependente) )) +
+  geom_point(alpha = 0.5, size = 2.75, show.legend = FALSE) +
+  geom_smooth(aes(y=pred), method = "lm", se = TRUE, size = 0.75, color = "red") +
+  geom_smooth(method = "lm", se = TRUE, size = 0.75, color = "blue") +
+  theme_minimal()
+# p %>% print()
+
+
+ 
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

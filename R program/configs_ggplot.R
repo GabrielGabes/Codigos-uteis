@@ -1,4 +1,4 @@
-Familias de fontes disponiveis
+# Familias de fontes disponiveis
 library(systemfonts)
 
 # Listando fontes disponíveis
@@ -38,9 +38,9 @@ ggsave("fontes_para_graficos_HP.jpg", height=20, width=80, units="cm", dpi= 600)
 
 
 
-CONFIGURAÇÃO GLOBAL DO TEMA
-https://ggplot2-book.org/themes
-https://ggplot2-book.org/themes#sec-themes
+# CONFIGURAÇÃO GLOBAL DO TEMA
+# https://ggplot2-book.org/themes
+# https://ggplot2-book.org/themes#sec-themes
 
 tema = theme_classic(base_family = "Times New Roman")
 
@@ -69,7 +69,6 @@ elementos_tema = theme_update( #theme(
 theme_set(tema)
 
 element_blank() #Nada
-facet_wrap() facet_grid() -> https://ggplot2-book.org/themes#faceting-elements
-font face -> https://ggplot2.tidyverse.org/articles/ggplot2-specs.html#font-face
-themes -> https://ggplot2.tidyverse.org/reference/ggtheme.html
-
+facet_wrap() facet_grid() #-> https://ggplot2-book.org/themes#faceting-elements
+# font face -> https://ggplot2.tidyverse.org/articles/ggplot2-specs.html#font-face
+# themes -> https://ggplot2.tidyverse.org/reference/ggtheme.html
