@@ -1,0 +1,1 @@
+jupyter nbconvert --to script "C:\Users\gabri\OneDrive\Documentos\Cripto\AcompanhaNews\raspa pesquisa google.ipynb"

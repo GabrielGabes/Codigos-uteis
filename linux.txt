@@ -1,0 +1,26 @@
+55.8gb, 47.6 livre
+
+#  Verificando se há atualizações pendentes para o sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalando um programa
+sudo apt install python3
+
+# Desinstalar e instalar novamente
+sudo apt remove code
+sudo apt install code
+# # ou
+sudo apt install --reinstall python3
+
+# Verificando versão do programa
+python3 --version
+
+# Excluir Arquivos Temporários e Cache
+sudo rm -rf /var/tmp/*
+sudo rm -rf /tmp/*
+sudo apt clean
+sudo journalctl --vacuum-time=3d  # Remove logs antigos (mantém os últimos 3 dias)
+
+# Para limpar caches do sistema e liberar espaço
+sudo du -sh /var/cache/apt/
+sudo rm -rf /var/cache/apt/archives/*
