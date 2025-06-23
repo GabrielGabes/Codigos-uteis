@@ -1,0 +1,10 @@
+1. No Raspberry Pi (Linux ARM64)
+Você instala direto pelo terminal com um comando oficial, assim:
+
+curl -s https://install.zerotier.com | sudo bash
+
+2 - sudo zerotier-cli join 272f5eae16d1a6f4 (id da sua rede zerotier)
+
+3 - autorizar o ip em https://my.zerotier.com/network/272f5eae16d1a6f4
+
+4 - testar se os dois estao se vendo
