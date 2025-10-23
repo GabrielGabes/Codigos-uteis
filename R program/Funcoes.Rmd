@@ -200,7 +200,9 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
     tabyl(.data[[var_x]], .data[[var_y]], show_na = FALSE) %>% 
     adorn_totals(c("row", "col")) %>% 
     adorn_percentages(sentido_percent) %>% 
-    adorn_pct_formatting(2) %>% adorn_ns
+    adorn_pct_formatting(2) %>% 
+    adorn_ns(position = "front") #%>% 
+    # mutate(across(-1, ~gsub("%", " %", .)))  # melhora o espaçamento
   
   #tabela = as.data.frame(tabela) %>% 
     #mutate(across(where(is.character), ~ str_replace_all(.x, "(\\d+\\.\\d+)\\% *\\(? *(\\d+)\\)?", "\\2 (\\1%)")))
@@ -241,8 +243,14 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
   return(tabela %>% as.data.frame())
 }
 
-conti(dff, "desfecho", "tratamentos")
+# conti(dff, "desfecho", "tratamentos")
+conti(df, coluna_analisada, 'asa', sentido_percent='col', apenas_fisher=F)
 ```
+
+```{r}
+
+```
+
 
 
 ```{r Teste de normalidade}
@@ -268,7 +276,7 @@ shapiro_test <- function(x) {
 
 normalidade_por_grupo_shapiro = function(df, col_num, col_cat){
   tabela = aggregate(df[[col_num]]~df[[col_cat]], data=df, shapiro_test) 
-  resultados = tabela$`p-value`
+  resultados = tabela$`df[[col_num]]` #`p-value`
   verificacao = any(resultados < 0.05)
   
   if (verificacao){ 
