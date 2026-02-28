@@ -1,0 +1,45 @@
+Estatística Descritiva	
+Fundamentos de Big Data	
+Estatística e Probabilidade Aplicada	
+Algoritmos e Programação	
+Comunicação	
+		
+Laboratório de Matemática e Física	
+Arquitetura e Organização de Computadores	
+Banco de Dados	
+Técnicas de Programação	
+Desenvolvimento Humano e Social	
+		
+Programação Orientada a Objetos		
+Distribuições de Probabilidade		
+Estrutura de Dados	
+Cálculo Aplicado – Uma Variável	
+Estatística Aplicada ao Data Science		
+	 	
+Programação para Ciência de Dados	
+Engenharia de Software	
+Álgebra Linear Computacional	
+Frameworks para Big Data	
+Antropologia e Cultura Brasileira	
+		
+Cálculo Aplicado – Várias Variáveis	
+Introdução a Programação em Big Data	
+Banco de Dados Aplicado a Big Data	
+Gestão de Projetos	
+		
+Inferência Bayesiana	
+Aprendizado de Máquina Supervisionado	
+Engenharia de Dados	
+Desenvolvimento de Software para Web	
+		
+Computação para Dispositivos Móveis	
+Aprendizado de Máquina Não Supervisionado	
+Métodos e Ferramentas para Visualização de Dados		
+Optativa I		
+	
+Aprendizado de Máquina Avançado
+Análise Bayesiana de Dados
+Laboratório de Software e Projetos
+Estágio	
+Optativa II
+Atividades Complementares

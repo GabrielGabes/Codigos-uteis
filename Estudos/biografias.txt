@@ -1,0 +1,210 @@
+- **Ronald Fisher**
+  - Desenvolvimento da análise de variância (ANOVA).
+  - Introdução dos conceitos de máxima verossimilhança e randomização em experimentos.
+  - Fisher era um fumante ávido e criticou estudos que ligavam o fumo ao câncer, argumentando falhas estatísticas.
+
+- **Thomas Bayes**
+  - Formulou o Teorema de Bayes, fundamental para a inferência estatística.
+  - Bayes era um ministro presbiteriano e suas obras só ganharam fama após sua morte.
+
+- **Karl Pearson**
+  - Fundador da biometria e estatística matemática.
+  - Criador do coeficiente de correlação de Pearson.
+  - Pearson foi inicialmente treinado como advogado antes de se voltar para a biologia e depois para a estatística.
+
+- **John Tukey**
+  - Desenvolvimento da análise exploratória de dados.
+  - Inventou o termo "bit" e "software".
+  - Tukey trabalhou em várias aplicações práticas de estatística durante a Segunda Guerra Mundial.
+
+- **Jeffrey Leek**
+  - Trabalhos na área de bioestatística e dados de alta dimensão.
+  - Contribuições para a acessibilidade da educação em ciência de dados através de MOOCs.
+  - Leek é conhecido por sua defesa da ciência de dados como disciplina científica rigorosa e sua ênfase na reproducibilidade dos dados.
+
+- **John Rollins**
+  - Pesquisador em métodos estatísticos aplicados à epidemiologia.
+  - Contribuições notáveis para o entendimento de doenças infecciosas e sua prevenção.
+
+- **Francis Galton**
+  - Introduziu conceitos de correlação e regressão ao estudo da hereditariedade e eugenia.
+  - Primo de Charles Darwin, Galton foi profundamente influenciado pela teoria da evolução.
+  - Desenvolveu métodos para estudos de impressões digitais usados até hoje.
+
+- **Daniel McFadden**
+  - Ganhou o Prêmio Nobel de Ciências Econômicas por seus desenvolvimentos na teoria e métodos de análises de escolhas discretas.
+  - Contribuições fundamentais para a econometria e estatística aplicada.
+
+- **Família Bernoulli**
+  - Uma família de notáveis matemáticos suíços conhecida por suas contribuições fundamentais à teoria das probabilidades.
+  - Jakob Bernoulli formulou a Lei dos Grandes Números.
+
+- **Abraham de Moivre**
+  - Pioneiro no desenvolvimento da teoria de probabilidade.
+  - De Moivre formulou a fórmula de De Moivre, que conecta trigonometria e números complexos.
+  - Desenvolveu o teorema central do limite, fundamental na estatística.
+
+- **John Rollins**
+  - Pesquisador em métodos estatísticos aplicados à epidemiologia.
+  - Contribuições notáveis para o entendimento de doenças infecciosas e sua prevenção.
+
+- **Francis Galton**
+  - Introduziu conceitos de correlação e regressão ao estudo da hereditariedade e eugenia.
+  - Primo de Charles Darwin, Galton foi profundamente influenciado pela teoria da evolução.
+  - Desenvolveu métodos para estudos de impressões digitais usados até hoje.
+
+- **Daniel McFadden**
+  - Ganhou o Prêmio Nobel de Ciências Econômicas por seus desenvolvimentos na teoria e métodos de análises de escolhas discretas.
+  - Contribuições fundamentais para a econometria e estatística aplicada.
+
+- **Família Bernoulli**
+  - Uma família de notáveis matemáticos suíços conhecida por suas contribuições fundamentais à teoria das probabilidades.
+  - Jakob Bernoulli formulou a Lei dos Grandes Números.
+
+- **Abraham de Moivre**
+  - Pioneiro no desenvolvimento da teoria de probabilidade.
+  - De Moivre formulou a fórmula de De Moivre, que conecta trigonometria e números complexos.
+  - Desenvolveu o teorema central do limite, fundamental na estatística.
+
+- **Pierre-Simon Laplace**
+  - Desenvolveu a teoria analítica das probabilidades e contribuições significativas à estatística.
+  - Laplace é conhecido pelo seu trabalho na mecânica celeste, detalhando a estabilidade do sistema solar.
+  - Introduziu a transformada de Laplace, que é amplamente usada em engenharia e física.
+
+- **Carl Friedrich Gauss**
+  - Fez contribuições fundamentais para a teoria dos números, estatística, análise, geometria diferencial, magnetismo, astronomia e óptica.
+  - Desenvolveu o método dos mínimos quadrados e a distribuição normal.
+  - Gauss é frequentemente referido como o "Príncipe dos Matemáticos".
+
+- **Francis Galton** (Repetição com acréscimos)
+  - Pioneiro nas investigações de correlação e regressão ao estudo da hereditariedade.
+  - Criou o conceito de regressão e correlação estatística.
+  - Galton foi um polímata, com contribuições que vão desde a meteorologia até a antropometria.
+
+- **Francis Ysidro Edgeworth**
+  - Contribuiu com métodos estatísticos para a economia e formulou a distribuição de Edgeworth.
+  - Trabalhou com teorias de probabilidade e suas aplicações econômicas, sendo um dos primeiros a aplicar estes métodos na economia.
+  - Desenvolveu o índice de concentração, um precursor dos índices modernos de concentração de mercado.
+
+- **Aleksandr Lyapunov**
+  - Conhecido pelo desenvolvimento da teoria da estabilidade, fundamental na matemática aplicada e na física.
+  - O segundo teorema de Lyapunov fornece uma maneira de estudar a estabilidade dos sistemas utilizando funções-Lyapunov.
+  - Fez contribuições para a teoria das probabilidades e teve um impacto significativo no estudo de processos estocásticos.
+
+- **Émile Borel**
+  - Pioneiro na teoria das funções reais e na teoria das probabilidades.
+  - Borel introduziu o conceito de eventos negligenciáveis e a noção de espaço métrico.
+  - Conhecido por sua formulação do paradoxo do macaco infinito, explorando a aleatoriedade e infinitude.
+
+- **William Gosset**
+  - Estatístico conhecido pelo desenvolvimento do teste t, sob o pseudônimo "Student".
+  - Trabalhou na Guinness Brewery, onde suas pesquisas em estatística eram aplicadas para controle de qualidade.
+  - Suas técnicas foram fundamentais para pequenas amostras em pesquisas agrícolas e industriais.
+
+- **Harold Jeffreys**
+  - Contribuiu significativamente para a teoria bayesiana e a estatística, especialmente no contexto da inferência científica.
+  - Desenvolveu uma metodologia para a avaliação quantitativa da probabilidade em hipóteses científicas.
+  - Autor de "Theory of Probability", que jogou um papel crucial na revivescência bayesiana.
+
+- **Bruno de Finetti**
+  - Contribuições fundamentais para a teoria das probabilidades e estatística bayesiana.
+  - Defendeu o conceito de probabilidade subjetiva, onde as probabilidades são medidas de crença pessoal ao invés de frequência.
+  - Sua abordagem influenciou profundamente a teoria e prática estatística contemporânea.
+
+- **Frank Ramsey**
+  - Matemático e filósofo que fez contribuições para a lógica, matemática, economia e filosofia.
+  - Desenvolveu a 'Teoria de Ramsey' na matemática, que trata da existência de subestruturas em condições suficientemente grandes.
+  - Sua obra em economia influenciou a teoria da utilidade e decisão sob incerteza.
+
+- **Andrey Kolmogorov**
+  - Fundador da teoria moderna das probabilidades, introduzindo a axiomática que leva seu nome.
+  - Contribuições em turbulência, mecânica clássica, teoria da informação e teoria dos algoritmos.
+  - Suas leis de grande número e teoremas de limites são pilares na teoria da probabilidade.
+
+- **Eric Lehman**
+  - Conhecido por seus trabalhos em teoria estatística e suas aplicações práticas, especialmente em estimação e testes de hipóteses.
+  - Co-autor de vários livros didáticos influentes em estatística, ajudando a formar gerações de estatísticos.
+
+- **George Box**
+  - Estatístico britânico que desenvolveu a frase "Todos os modelos estão errados, mas alguns são úteis."
+  - Contribuições importantes em técnicas de controle de qualidade e metodologia de experimentos.
+  - Co-desenvolvedor do método Box-Jenkins para modelagem de séries temporais e Box-Behnken design.
+
+- **Radhakrishna Rao**
+  - Conhecido por suas formulações de estimadores eficientes em estatística, que levam seu nome (Estimadores de Rao-Blackwell).
+  - Contribuições significativas em teoria estatística, econometria e biometria.
+  - Sua abordagem inovadora tem sido utilizada em genética populacional e estatísticas de amostragem.
+
+- **Lucien Le Cam**
+  - Teórico estatístico francês, conhecido por suas contribuições à teoria das decisões e estatística matemática.
+  - Desenvolveu a teoria de aproximação assintótica das experiências estatísticas, que influenciou a teoria da inferência estatística.
+  - Sua obra aborda a complexidade da inferência a partir de grandes amostras e seus limites.
+
+- **David Cox**
+  - Desenvolveu o modelo proporcional de riscos de Cox, uma das ferramentas mais usadas em análise de sobrevivência.
+  - Suas contribuições abrangem uma ampla variedade de aplicações da estatística, da genética à qualidade industrial.
+
+- **C.R. Rao**
+  - Contribuições significativas em teoria das estatísticas e suas aplicações.
+  - Introduziu os conceitos de estimadores ortogonais e teoria da informação em estatística.
+
+- **S. S. Wilks**
+  - Desenvolveu testes estatísticos importantes e contribuições para a análise de variância.
+  - Seu teste de Wilks é fundamental na análise multivariada, especialmente em testes de hipóteses.
+
+- **Hadley Wickham**
+  - Desenvolvedor do tidyverse no R, revolucionou a análise de dados no R.
+  - Seu trabalho em pacotes como ggplot2, dplyr e tidyr tem facilitado a manipulação e visualização de dados para milhões de usuários.
+
+- **Leo Breiman**
+  - Um dos pioneiros em machine learning, especialmente em modelos de árvores de decisão e random forests.
+  - Seu enfoque estatístico na modelagem preditiva desafiou as abordagens tradicionais centradas no modelo, favorecendo métodos orientados pelos dados.
+
+- **Andrew Gelman**
+  - Contribuições em modelos hierárquicos Bayesianos e comunicação estatística.
+  - Seu trabalho tem sido fundamental para avançar na compreensão e aplicação de métodos Bayesianos em ciências sociais e pesquisa de saúde.
+
+- **Bradley Efron**
+  - Desenvolveu o método de bootstrap transformou a estatística computacional e é amplamente utilizado em várias disciplinas, incluindo bioestatística e farmacologia.
+
+- **Sir Richard Peto**
+  - Suas contribuições para a epidemiologia do câncer e métodos de ensaios clínicos são de extrema importância. Ele ajudou a estabelecer relações causais importantes, como a ligação entre tabagismo e câncer.
+
+- **David Cox**
+  - O modelo de regressão de Cox é um dos métodos mais utilizados para a análise de sobrevivência e tempo até o evento, especialmente em estudos clínicos e farmacológicos.
+
+- **Nan Laird**
+  - Suas contribuições para a análise de dados longitudinais e modelos de efeitos mistos têm um papel crucial em estudos que envolvem dados repetidos ao longo do tempo, comum em pesquisas de saúde.
+
+- **Ralph D'Agostino**
+  - Conhecido por seu trabalho em métodos estatísticos para ensaios clínicos e epidemiologia cardiovascular, suas contribuições ajudaram a moldar a análise estatística em estudos de saúde.
+
+- **Marvin Zelen**
+  - Pioneiro nos métodos para o design e análise de ensaios clínicos, suas contribuições são fundamentais para a metodologia de pesquisa clínica.
+
+- **Ross Prentice**
+  - Seu trabalho em métodos estatísticos para estudar doenças crônicas, especialmente câncer, teve um impacto significativo na epidemiologia e na análise de dados de ensaios clínicos.
+
+- **John P. A. Ioannidis**
+  - (Bioestatística e Epidemiologia) Conhecido por seu trabalho sobre a reprodutibilidade da pesquisa científica e por sua crítica às práticas de pesquisa em saúde. Ele escreveu o influente artigo "Why Most Published Research Findings Are False".
+
+- **Bradley Efron**
+  - (Bioestatística) Desenvolveu o método de bootstrap, que é amplamente utilizado em bioestatística e farmacologia para estimar a distribuição de uma estatística amostral.
+
+- **Sir Richard Peto**
+  - (Epidemiologia e Bioestatística) significativas na metodologia de ensaios clínicos e na epidemiologia do câncer. Ele é coautor do estudo sobre tabagismo e saúde que estabeleceu a relação entre tabagismo e câncer.
+
+- **David Cox**
+  - (Estatística Aplicada e Bioestatística) Desenvolveu o modelo de regressão de Cox, amplamente utilizado na análise de sobrevivência, especialmente em estudos clínicos e farmacológicos.
+
+- **Nan Laird**
+  - (Bioestatística) Conhecida por seu trabalho com modelos de efeitos mistos e pela análise de dados longitudinais. Seu trabalho é amplamente utilizado em estudos clínicos e pesquisas em saúde.
+
+- **Ralph D'Agostino**
+  - (Bioestatística e Epidemiologia) Trabalhou em métodos estatísticos aplicados a ensaios clínicos e epidemiologia, incluindo a análise de risco cardiovascular.
+
+- **Marvin Zelen**
+  - (Bioestatística) Desenvolveu métodos para o desenho e análise de ensaios clínicos randomizados, com aplicações significativas em oncologia.
+
+- **Ross Prentice**
+  - (Bioestatística e Epidemiologia) Desenvolveu métodos estatísticos para o estudo de doenças crônicas, particularmente o câncer, e fez avanços na análise de dados de ensaios clínicos.

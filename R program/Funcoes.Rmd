@@ -99,10 +99,20 @@ rround(5115156, 2)
 
 
 ```{r}
-rround = function(valor, digitos){
+rround = function(valor, digitos, flg_notacao_cientifica = T){
   if (abs(valor) < 0.01 && abs(valor) > 0.0009) {formatC(valor, format = "f", digits = 3)} 
   else if (valor == 0){"0.00"}
-  else if (abs(valor) <= 0.0009 && valor != 0 || abs(valor) > 10000) {formatC(valor, format = "e", digits = digitos)} #{"0.00"}
+  else if (abs(valor) <= 0.0009 && valor != 0 || abs(valor) > 10000) {
+    if (flg_notacao_cientifica == T){
+      formatC(valor, format = "e", digits = 4)
+    } else {
+      if (abs(valor) <= 0.0009){
+        '0'
+      } else {
+        '∞'
+      }
+    }
+    } #{"0.00"}
   else {formatC(valor, format = "f", digits = digitos)}
 }
 
@@ -115,15 +125,17 @@ rround(0.1, 2)
 rround(45.5151, 2)
 rround(5115156, 2)
 rround(0.0000000041212, 2)
+rround(5115156, 2, flg_notacao_cientifica = F)
+rround(0.0000000041212, 2, flg_notacao_cientifica = F)
 ```
 
 
 ```{r}
 # Aplicando a função a todos elementos da coluna 
-apply_rround = function(df, coluna, digitos = 2){
+apply_rround = function(df, coluna, digitos = 4, flg_notacao_cientifica = T){
   df[[coluna]] = sapply(df[[coluna]], function(x) {
     if (!is.na(x) && is.numeric(x)) {
-      rround(x, digitos)
+      rround(x, digitos, flg_notacao_cientifica)
     } else {
       x
     }
@@ -154,7 +166,7 @@ library(janitor) #tabela de contigencia => tabyl, adorn_pct_formatting, adorn_to
 # Tabela contagem simples
 cont = function(df, variavel){
   df %>% tabyl(.data[[variavel]], show_na = FALSE) %>% 
-    adorn_pct_formatting(2) %>% as.data.frame()
+    adorn_pct_formatting(1) %>% as.data.frame()
 }
 
 #-#cont(dff, 'desfecho')
@@ -200,12 +212,13 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
     tabyl(.data[[var_x]], .data[[var_y]], show_na = FALSE) %>% 
     adorn_totals(c("row", "col")) %>% 
     adorn_percentages(sentido_percent) %>% 
-    adorn_pct_formatting(2) %>% 
+    adorn_pct_formatting(1) %>% 
     adorn_ns(position = "front") #%>% 
     # mutate(across(-1, ~gsub("%", " %", .)))  # melhora o espaçamento
   
-  #tabela = as.data.frame(tabela) %>% 
-    #mutate(across(where(is.character), ~ str_replace_all(.x, "(\\d+\\.\\d+)\\% *\\(? *(\\d+)\\)?", "\\2 (\\1%)")))
+  tabela = as.data.frame(tabela) %>%
+    mutate(across(where(is.character), ~ str_replace_all(.x, "(\\d+\\.\\d+)\\% *\\(? *(\\d+)\\)?", "\\2 (\\1%)")))
+
   tabela = rename(tabela, "Variable" = var_x)
   tabela = rbind(NA, tabela)
   tabela[["Variable"]] = as.character(tabela[["Variable"]])
@@ -230,7 +243,8 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
   # Determina a sequência de índices das colunas
   indices = seq_len(ncol(tabela))
   # Altera a sequência para colocar a coluna -3 na posição 2
-  indices = c(indices[1], indices[length(indices)-2], indices[2:(length(indices)-3)], indices[(length(indices)-1):length(indices)])
+  indices = c(indices[1], indices[length(indices)-2], indices[2:(length(indices)-3)],
+              indices[(length(indices)-1):length(indices)])
   # Reordena as colunas do dataframe de acordo com a sequência
   tabela = tabela[, indices]
   tabela[["Variable"]][1] = var_x
@@ -239,16 +253,14 @@ conti = function(df, var_y, var_x, sentido_percent='col', apenas_fisher=F){
   colnames(tabela)[colnames(tabela) == 'Total'] = 'Overall'
   tabela[] = lapply(tabela, function(x) gsub("%", "", x))
   tabela[] = lapply(tabela, function(x) gsub("  ", " ", x))
+  tabela[] = lapply(tabela, function(x) gsub(" \\(", "; (", x))
   
   return(tabela %>% as.data.frame())
 }
+conti(df, coluna_analisada, coluna, "col")
 
 # conti(dff, "desfecho", "tratamentos")
-conti(df, coluna_analisada, 'asa', sentido_percent='col', apenas_fisher=F)
-```
-
-```{r}
-
+# conti(df, coluna_analisada, 'asa', sentido_percent='col', apenas_fisher=F)
 ```
 
 
@@ -322,8 +334,8 @@ summary_numerico_parametrico = function(df, col_num){
   tabela = df %>%
     filter(!is.na(!!sym(col_num))) %>%
     summarise(
-      mean = round(mean(!!sym(col_num), na.rm = TRUE), 2),
-      std = round(sd(!!sym(col_num), na.rm = TRUE), 2))
+      mean = round(mean(!!sym(col_num), na.rm = TRUE), 1),
+      std = round(sd(!!sym(col_num), na.rm = TRUE), 1))
   
   tabela[["Variable"]] = col_num
   rownames(tabela) = NULL
@@ -332,7 +344,7 @@ summary_numerico_parametrico = function(df, col_num){
   return(tabela)
 }
 
-summary_numerico_parametrico(dff, 'var_num')
+# summary_numerico_parametrico(dff, 'var_num')
 
 library(effsize) #tamanho do efeito d'cohen
 
@@ -343,9 +355,9 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
     group_by(!!sym(col_cat)) %>%
     summarise(
       resumo = paste0(
-        round(mean(!!sym(col_num), na.rm = TRUE), 2), 
-        #" ± ", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2)
-        " (", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2), ")")
+        round(mean(!!sym(col_num), na.rm = TRUE), 1), 
+        " ;± ", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 1))
+        # "; (", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2), ")")
       )
   sumario_grupo <- rename(sumario_grupo, coluna = all_of(col_cat))
   
@@ -355,9 +367,9 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
     summarise(
       coluna = 'Total',
       resumo = paste0(
-        round(mean(!!sym(col_num), na.rm = TRUE), 2), 
-        #" ± ", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2)
-        " (", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2), ")")
+        round(mean(!!sym(col_num), na.rm = TRUE), 1), 
+        " ;± ", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 1))
+        # " (", round(as.numeric(sd(!!sym(col_num), na.rm = TRUE)), 2), ")")
       )
   
   sumario_final = rbind(sumario_geral, sumario_grupo) # Combinar os sumários
@@ -401,7 +413,7 @@ summary_numerico_por_grupo_parametrico = function(df, col_num, col_cat, teste_ex
   return(tabela)  
 }
 # Exemplo de uso:
-summary_numerico_por_grupo_parametrico(dff, "var_num", "desfecho", 'T')
+# summary_numerico_por_grupo_parametrico(dff, "var_num", "desfecho", 'T')
 ```
 
 ```{r}
@@ -422,21 +434,17 @@ print(teste_usado)
 ```
 
 
-```{r}
-```
-
-
 
 ```{r}
 summary_numerico_n_parametrico = function(df, col_num){
   tabela = df %>%
     filter(!is.na(!!sym(col_num))) %>%
     summarise(
-      median = round(median(!!sym(col_num), na.rm = TRUE), 2),
+      median = round(median(!!sym(col_num), na.rm = TRUE), 1),
       q1_q3 = paste0(
-        '[', round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2), 
+        ';[', round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 1), 
         " - ", 
-        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2), ']'))
+        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 1), ']'))
   
   tabela[["Variable"]] = col_num
   rownames(tabela) = NULL
@@ -452,10 +460,10 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
     group_by(!!sym(col_cat)) %>%
     summarise(
       resumo = paste0(
-        round(median(!!sym(col_num), na.rm = TRUE), 2),
-        " [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2), 
+        round(median(!!sym(col_num), na.rm = TRUE), 1),
+        "; [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 1), 
         " - ", 
-        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2),"]"
+        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 1),"]"
       )
     )
   sumario_grupo = rename(sumario_grupo, "coluna" = col_cat)
@@ -466,10 +474,10 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
     summarise(
       coluna = 'Total',
       resumo = paste0(
-        round(median(!!sym(col_num), na.rm = TRUE), 2), 
-        " [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2), 
+        round(median(!!sym(col_num), na.rm = TRUE), 1), 
+        "; [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 1), 
         " - ", 
-        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2),"]"
+        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 1),"]"
       )
     )
   
@@ -514,7 +522,78 @@ summary_numerico_por_grupo_n_parametrico = function(df, col_num, col_cat, teste_
   return(tabela)  
 }
 
-summary_numerico_por_grupo_n_parametrico(dff, "var_num", "desfecho", 'T')
+# summary_numerico_por_grupo_n_parametrico(dff, "var_num", "desfecho", 'T')
+```
+
+
+```{r}
+
+summary_numerico_por_grupo_n_parametrico_f = function(df, col_num, col_cat, teste_extra="F"){
+  # Sumário por grupo
+  sumario_grupo = df %>%
+    filter(!is.na(!!sym(col_num)), !is.na(!!sym(col_cat))) %>%
+    group_by(!!sym(col_cat)) %>%
+    summarise(
+      resumo = paste0(
+        round(median(!!sym(col_num), na.rm = TRUE), 1),
+        " [", round(as.numeric(quantile(!!sym(col_num), 0.25, na.rm = TRUE)), 2), 
+        "; ", 
+        round(as.numeric(quantile(!!sym(col_num), 0.75, na.rm = TRUE)), 2),"]",
+        " (", round(as.numeric(min(!!sym(col_num), na.rm = TRUE)), 2), 
+        "; ", 
+        round(as.numeric(max(!!sym(col_num), na.rm = TRUE)), 2),")"
+      )
+    )
+  sumario_grupo = rename(sumario_grupo, "coluna" = col_cat)
+  
+  sumario_final = sumario_grupo # Combinar os sumários
+  tabela = as.data.frame(t(sumario_final)) # Transpor o dataframe
+  colnames(tabela) = tabela[1, ] # Ajustar os nomes das colunas
+  tabela = tabela[-1, ]  # Remover a primeira linha
+  rownames(tabela)[1] = col_num
+  
+  tabela[["P-value"]] = NA
+  tabela[["Test_Used"]] = NA
+  if (length(levels(as.factor(df[[col_cat]]))) > 2){
+    pvalor = retorne_p(kruskal.test(df[[col_num]]~df[[col_cat]])$p.value)
+    tabela[["Test_Used"]][1] = "Kruskal-Wallis"}
+  else{
+    pvalor = retorne_p(wilcox.test(df[[col_num]]~df[[col_cat]])$p.value)
+    tabela[["Test_Used"]][1] = "Mann-Whitney"
+    
+    if (teste_extra == "T"){
+      # Estimador Hodges Lehmann
+      niveis = df[[col_cat]] %>% as.factor() %>% levels()
+      grupo1 = df[[col_num]][df[[col_cat]] == niveis[2]]
+      grupo2 = df[[col_num]][df[[col_cat]] == niveis[1]]
+      teste_hip = wilcox.test(grupo1, grupo2, conf.int = TRUE)
+      estimador = as.character(rround(teste_hip$estimate,2))
+      IC_00 = as.character(rround(teste_hip$conf.int[1],2))
+      IC_01 = as.character(rround(teste_hip$conf.int[2],2))
+      tamnho_do_efeito = paste0(estimador,' (',IC_00,'; ',IC_01,')')
+      tabela[["hodges_lehmann"]] = NA
+      tabela[["hodges_lehmann"]] = tamnho_do_efeito
+      
+      # teste_hip = rcompanion::wilcoxonR(df[[col_num]], g = df[[col_cat]], ci = T)
+      estimador = as.character(rround(teste_hip$r[1],2))
+      IC_00 = as.character(rround(teste_hip$lower.ci[1],2))
+      IC_01 = as.character(rround(teste_hip$upper.ci[1],2))
+      tamnho_do_efeito = paste0(estimador,' (',IC_00,'; ',IC_01,')')
+      tabela[["tmn_efeito01"]] = NA
+      tabela[["tmn_efeito01"]] = tamnho_do_efeito
+      }
+    }
+  tabela[["P-value"]] = pvalor
+  
+  tabela[["Variable"]] = rownames(tabela)
+  rownames(tabela) = NULL
+  tabela = tabela[, c(ncol(tabela), 1:(ncol(tabela)-1))] #ultima coluna para primeira
+  tabela[["Test_Used"]] = NULL
+  
+  return(tabela)
+}
+
+# summary_numerico_por_grupo_n_parametrico_f(fd, 'ema_9', coluna_analisada, teste_extra = 'T')
 ```
 
 
@@ -531,7 +610,7 @@ summary_numerico_por_grupo(dff, "var_num", "desfecho")
 ```
 
 ```{r Medidas de modelo de Regressão Logistica}
-analise_mod = function(modelo){
+analise_mod = function(modelo, digits_arround = 2, flg_notacao_cientifica = T){
   estimadores = as.data.frame(summary(modelo)$coefficients)
   odds = as.data.frame((exp(cbind(OR= coef(modelo), confint(modelo)))))
   
@@ -539,9 +618,9 @@ analise_mod = function(modelo){
   #estimadores = estimadores[, "Pr(>|z|)", drop = FALSE]
   
   #odds = odds[rowSums(is.na(odds)) != ncol(odds), ] # Apagando as linhas quando um dado estiver NA
-  odds = apply_rround(odds, "OR")
-  odds = apply_rround(odds, "2.5 %")
-  odds = apply_rround(odds, "97.5 %")
+  odds = apply_rround(odds, "OR", digits_arround, flg_notacao_cientifica)
+  odds = apply_rround(odds, "2.5 %", digits_arround, flg_notacao_cientifica)
+  odds = apply_rround(odds, "97.5 %", digits_arround, flg_notacao_cientifica)
   #tabelona$OR = sapply(tabelona$OR, function(x) ifelse(is.na(x), NA, round(x, 2)))
   #tabelona$`2.5 %` = sapply(tabelona$`2.5 %`, function(x) ifelse(is.na(x), NA, round(x, 2)))
   #tabelona$`97.5 %` = sapply(tabelona$`97.5 %`, function(x) ifelse(is.na(x), NA, round(x, 2)))
@@ -1082,5 +1161,25 @@ cross_table_glm(dff, 'desfecho')
 ```
 ```{r}
 print('FIMMMM FUNCOES')
+```
+
+```{r}
+library(stringr)
+normalize_column_names <- function(df) {
+  # Remover acentuação
+  colnames(df) <- iconv(colnames(df), from = "UTF-8", to = "ASCII//TRANSLIT")
+  # Converter para minúsculas
+  colnames(df) <- tolower(colnames(df))
+  # Substituir espaços por underscores
+  colnames(df) <- str_replace_all(colnames(df), " ", "_")
+  # Remover caracteres especiais, mantendo apenas letras, números e underscores
+  colnames(df) <- gsub("[^a-z0-9_]", "", colnames(df))
+  # Substituir múltiplos underscores consecutivos por um único underscore
+  colnames(df) <- gsub("_+", "_", colnames(df))
+  # Remover underscores no início ou fim dos nomes de colunas
+  colnames(df) <- gsub("^_|_$", "", colnames(df))
+  
+  return(df)
+}
 ```
 

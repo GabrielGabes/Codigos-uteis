@@ -114,6 +114,7 @@ teste_hip %>% summary()
 
 ```{r Pós Hoc Dunnet}
 multcomp::glht(teste_hip, linfct = mcp(tratamentos = "Dunnett")) %>% summary()
+
 ```
 
 ```{r Pós Hoc Tukey}
@@ -129,6 +130,9 @@ kruskal.test(var_num ~ tratamentos, data=df)
 
 ```{r Pós Hoc Dunn}
 dunn.test::dunn.test(df$var_num, df$tratamentos, method="bonferroni")
+
+library(FSA)
+dunnTest(var_num ~ tratamentos, data=df, method="holm")
 ```
 
 
@@ -274,18 +278,98 @@ teste_hip
 
 ```{r Qui-Quadrado e Analise de Residuos}
 teste_hip = chisq.test(df$desfecho, df$tratamentos)
+teste_hip = chisq.test(tab)
+teste_hip
 
 # Valores observados
-teste_hip$observed
+teste_hip$observed # Oij
 
 # Valores esperados
-teste_hip$expected
+teste_hip$expected # Eij
 
 # Resíduos
-teste_hip$residuals
+teste_hip$residuals # (Oij - Eij) / sqrt(Eij)
 
-# Resíduos padronizados
+# Resíduos padronizados Ajustados (ASR)
 teste_hip$stdres
+
+# p-valor bicaudal por célula (sem correção)
+p_raw = 2 * (1 - pnorm(abs(teste_hip$stdres)))
+p_raw
+
+# Correção de bonferroni para multiplas comparações
+### Transformar matriz em vetor
+### Ajuste de p-valor (escolha o método: "holm" ou "bonferroni", por ex.)
+p_adj_vec  <- p.adjust(as.vector(p_raw), method = "holm")
+
+# Voltar para formato de matriz
+p_adj <- matrix(
+  p_adj_vec,
+  nrow = nrow(tab),
+  ncol = ncol(tab),
+  byrow = FALSE
+)
+rownames(p_adj) <- rownames(tab)
+colnames(p_adj) <- colnames(tab)
+p_adj # p-values ajustados por célula
+
+
+posthoc_chisq <- function(tab, method = "holm") {
+  teste <- chisq.test(tab, correct = FALSE)
+  
+  stdres <- teste$stdres
+  
+  p_raw <- 2 * (1 - pnorm(abs(stdres)))
+  
+  p_adj_vec <- p.adjust(as.vector(p_raw), method = method)
+  
+  p_adj <- matrix(
+    p_adj_vec,
+    nrow = nrow(tab),
+    ncol = ncol(tab),
+    byrow = FALSE
+  )
+  
+  rownames(p_adj) <- rownames(tab)
+  colnames(p_adj) <- colnames(tab)
+  
+  list(
+    teste_global = teste,
+    stdres       = stdres,
+    p_raw        = p_raw,
+    p_ajustado   = p_adj
+  )
+}
+
+# Uso:
+res <- posthoc_chisq(tab, method = "holm")
+res$teste_global
+res$stdres
+res$p_ajustado
+
+```
+
+```{r pairwise Nominal Independence with rcompanion}
+library(rcompanion)
+
+tabela = table(df$desfecho, df$tratamentos)
+
+# Tabela com Multicomparações - Post Hoc
+pos_teste = rcompanion::pairwiseNominalIndependence(tabela, fisher = FALSE,
+                                                    gtest  = FALSE, chisq  = TRUE, method = "holm")
+pos_teste
+
+# pos_teste = apply_retorne_p(pos_teste, "p.Chisq")
+# pos_teste = apply_retorne_p(pos_teste, "p.adj.Chisq")
+# pos_teste
+```
+
+```{r pairwise.prop.test}
+tabela = table(df$tratamentos, df$desfecho)
+
+# Tabela com Multicomparações - Post Hoc
+pos_teste = pairwise.prop.test(tabela)
+pos_teste
 ```
 
 
@@ -305,31 +389,6 @@ comp %>% summary()
 
 # Tabela o intervalos de confiança
 comp %>% confint()
-```
-
-
-```{r pairwise Nominal Independence with rcompanion}
-library(rcompanion)
-
-tabela = table(df$desfecho, df$tratamentos)
-
-# Tabela com Multicomparações - Post Hoc
-pos_teste = rcompanion::pairwiseNominalIndependence(tabela, fisher = FALSE,
-                                                    gtest  = FALSE, chisq  = TRUE, method = "holm")
-pos_teste
-
-# pos_teste = apply_retorne_p(pos_teste, "p.Chisq")
-# pos_teste = apply_retorne_p(pos_teste, "p.adj.Chisq")
-# pos_teste
-```
-
-
-```{r pairwise.prop.test}
-tabela = table(df$tratamentos, df$desfecho)
-
-# Tabela com Multicomparações - Post Hoc
-pos_teste = pairwise.prop.test(tabela)
-pos_teste
 ```
 
 

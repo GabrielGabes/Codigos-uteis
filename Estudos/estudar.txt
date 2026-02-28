@@ -1,0 +1,200 @@
+# Ética em Estatística
+- **Princípios Éticos:**
+  - Código de Ética, LGPD
+  - Transparência, confidencialidade, consentimento informado.
+- **Viés Algorítmico e Fairness:**
+  - Técnicas para detectar e corrigir viés em modelos estatísticos e de machine learning.
+
+# Funções elementares
+- quadrática
+- cúbica
+- exponenciais
+- logarítmica
+- modular
+- seno, cosseno, tangente
+
+# Estatística Descritiva
+- **Medidas de:**
+  - tendência central
+  - variação
+    - (teorema de Chebyshev)
+  - posição
+  - assimetria e curtose
+
+# Cálculo Numérico
+- **Métodos de refinamento de raízes:**
+  - método gráfico
+  - bisseção
+  - newton
+  - iteração linear
+- **Interpolações:**
+  - linear
+  - quadrática
+  - lagrange
+
+# Cálculo Diferencial e Integral
+- Determinação do domínio da função
+- Interseção com os eixos coordenados
+- Assíntotas: horizontais, verticais e oblíquas
+- Pontos críticos
+- Intervalos de crescimento e decrescimento
+- Máximos e mínimos locais
+- Concavidade e pontos de inflexão
+- Esboço da curva
+- Séries e Equações Diferenciais
+
+# Distribuições de probabilidade
+- **distribuições discretas:**
+  - bernoulli
+  - binomial
+  - geométrica
+  - hipergeométrica
+  - poisson
+  - pascal
+- **distribuições contínuas:**
+  - normal
+  - exponencial
+  - gama
+  - beta
+  - weibull
+- **distribuições amostrais:**
+  - normal
+  - t de Student
+  - F de Fisher-Snedecor
+  - qui-quadrado
+
+# Estatística Inferencial
+- **Intervalos de confiança para:**
+  - média (S conhecido)
+  - média (S desconhecido)
+  - proporção
+  - variância e desvio padrão
+- **Teste de Hipótese:**
+  - Com uma amostra para:
+    - média (S conhecido)
+    - média (S desconhecido)
+    - proporção
+    - variância e desvio padrão
+  - Com duas amostras:
+    - Testando a diferença entre:
+      - médias (amostras independentes, S1 e S2 conhecidos)
+      - médias (amostras independentes, S1 e S2 desconhecidos)
+      - médias (amostras dependentes)
+      - proporções
+
+# Algoritmos de Machine Learning
+- **Classificação:**
+  - Dummy Classifier - Modelo Nulo
+  - regressão logística
+  - naive bayes
+  - **Algoritmos Baseado em Árvores:**
+    - Decision Tree
+    - Random Forest
+    - **Algoritmos de Boosting:**
+      - AdaBoost
+      - Gradient Boosting
+      - XGBoost
+      - LightGBM
+      - CatBoost
+  - indução de regras
+  - kNN (baseada em instâncias)
+  - svm (máquinas de vetores de suporte)
+  - redes neurais
+- **Regressão:**
+  - linear
+  - múltipla
+  - polinomial
+  - **Outros:**
+    - decision tree
+    - random forest
+    - svm (máquinas de vetores de suporte)
+    - redes neurais
+- **Clusterização:**
+  - k-means
+  - hierárquico
+  - dbscan
+  - (k-medoides, fuzzy k-médias, árvore geradora mínima e DBSCAN (Density Based Spatial Clustering of Applications))
+
+
+################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+
+
+Nível Basico:
+	Modelo de probabilidade reduzido
+	Variaveis aleatórias
+	Probabilidades condicionais
+	Independencias
+	Esperanças matemáticas
+	Teorema do limite central
+	Intervalo de confiança
+	Teste para média e proporção
+	Modelos lineares
+	(somatório, funções, limites, cálculo diferencial integral)
+	{teoria de conjunto, algebra, sigmas álgebras, limites superior e inferior}
+	[algebra linear, cálculo numérico, analise na réta real]
+
+Nível Intermediário:
+	Modelo de probabilidade - sigmas álgebra
+	Variaveis aleatórias - funções mensuráveis
+	Convergências de probabilidade, distribuição e quase certa
+	Desigualdades:
+		Markov
+		Tchebycheff
+		Kolmogorov
+		Bernstein
+
+	Prova do teorema do limite central
+	Análise Multivariada:
+		Modelos lineares generalizados
+		Modelos não lineares
+		Modelos mistos
+		Modelos aditivos generalizados
+		Séries Temporais
+
+	(teoria de conjuntos, análise na reta real, cálculo numérico, álgebra linear, cálculo diferencial integral, teoria da medida)
+
+Nível Avançado:
+	Problema da medida
+	Teorema da extensão de Carathéodory
+	Teorema da extensão de Kolmogorov
+	Derivada de Radon-Nikodym
+	Teoremas do limites central
+	Sequências martingais
+	Desigualdades
+	Convergência
+	Espaços abstratos e métricas não triviais
+	Modelo estatísticos - Famílias de probabilidade
+	Teoremas envolvendo Estimadores - estatísticas suficientes, completas e ancilares
+
+
+Pesquisa de Mercado
+Algebra Linear (Computacional)
+Inferência Bayesiana
+Probabilidades Conjuntas
+Laboratório de Simulação
+Metodologia Cientifica
+Analise Multivariada de dados
+Analise Bayesiana de dados
+Controle Estatistico de Qualidade
+Processos Estocásticos - Amostragem
+
+Conceitos e Técnicas Avançadas:
+	Análise Multivariada: PCA (Análise de Componentes Principais), Análise de Cluster, Análise Discriminante.
+	Modelos de Equações Estruturais: Para análise de caminho e modelagem de construtos latentes.
+	Modelagem de Sobrevivência: Incluindo a função de risco e o modelo de Cox.
+	Métodos Bayesianos Avançados: MCMC (Cadeias de Markov Monte Carlo), INLA (Aproximação Laplaciana Integrada Aninhada).
+
+Técnicas de Machine Learning e Data Mining:
+	Deep Learning: Redes Neurais Convolucionais (CNNs), Redes Neurais Recorrentes (RNNs), Autoencoders, GANs (Redes Adversárias Generativas).
+	Ensemble Learning: Boosting, Stacking.
+	Aprendizagem Não Supervisionada Avançada: Análise de Componentes Independentes (ICA), Autoencoders para redução de dimensionalidade.
+	Processamento de Linguagem Natural (PLN): Modelos de linguagem, análise de sentimentos, tokenização, lematização.
+
+Métodos Estatísticos em Pesquisa Científica e Bioestatística:
+	Métodos de Correção de Múltiplos Testes: Bonferroni, Holm-Bonferroni, Benjamini-Hochberg.
+	Meta-Análise: Modelos de efeitos fixos e aleatórios, heterogeneidade.
+	Desenhos Experimentais Complexos: Análise de covariância (ANCOVA), modelos lineares generalizados mistos (GLMM).
+
+Estatísticas Espaciais e Temporais:
+	Modelos Espaciais: Kriging, Modelos Autoregressivos Condicionais Espaciais (CAR e SAR).
+	Séries Temporais: ARIMA, modelos sazonais, modelos baseados em estado espaço (como Kalman Filter).

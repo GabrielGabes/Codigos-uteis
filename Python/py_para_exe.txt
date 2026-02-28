@@ -13,6 +13,7 @@ pip install pyinstaller pandas openpyxl numpy unidecode regex
 	(4.1) - executavel com caixa de CMD
 	pyinstaller --onefile .\Conferencias.py
 
-	(4.2) - executavel sem caixa de CMD
+	(4.1) - executavel sem caixa de CMD
 	pyinstaller --onefile --noconsole Conferencias.py
+	pyinstaller --onefile --noconsole Tratamento_de_dados_planilhas_tasy.py
 	pyinstaller --onefile --windowed Conferencias.py

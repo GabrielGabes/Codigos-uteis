@@ -108,18 +108,18 @@ if (escolha == 1){ ## MODO DIRETO
 
 ## Criando dataframe ficticio para testes
 # source("~/Codigos úteis/R program/Gerador de Dados Ficticios/dataframe.R", echo=F)
-source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/main/Gerador%20de%20Dados%20Ficticios/dataframe.R')
-
+# source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/Gerador%20de%20Dados%20Ficticios/dataframe.R')
+df <- read_excel("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/Gerador de Dados Ficticios/df_ficticio.xlsx")
+df
 ######################################################################################
-
 
 #### Compilando arquivos .RMD ####
 pacman::p_load(knitr)
-#knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
-#knit("~/Codigos úteis/R program/Graficos_GGplot.Rmd")
 library(lmerTest)
-source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/R%20program/Funcoes.R')
-source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/R%20program/Graficos_GGplot.R')
+knit("C:/Users/gabri/OneDrive/Documentos/Codigos úteis/R program/Funcoes.Rmd")
+knit("~/Codigos úteis/R program/Graficos_GGplot.Rmd")
+# source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/R%20program/Funcoes.R')
+# source('https://raw.githubusercontent.com/GabrielGabes/Codigos-uteis/refs/heads/main/R%20program/Graficos_GGplot.R')
 
 ######################################################################################
 
