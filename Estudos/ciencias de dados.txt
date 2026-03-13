@@ -1,3 +1,6 @@
+****************************************************************************
+Grade Curricular Ciencias de Dados USP
+
 Estatística Descritiva	
 Fundamentos de Big Data	
 Estatística e Probabilidade Aplicada	
@@ -43,3 +46,102 @@ Laboratório de Software e Projetos
 Estágio	
 Optativa II
 Atividades Complementares
+
+****************************************************************************
+# Grade curricular Estatística USP
+
+Fundamentos de Ciências Exatas (Matemática + Física Mecânica)
+Perspectivas em Estatística
+Laboratório de Estatística Aplicada
+Algoritmos e Programação
+Comunicação
+
+Cálculo I
+Introdução a Programação em Big Data
+Geometria Analítica e Álgebra Linear
+Estatística Descritiva
+Probabilidade e Estatística
+
+Cálculo II
+Inferência Estatística
+Mineração de Dados I
+Probabilidade e Estatística II
+Desafios Contemporâneos
+
+Cálculo III
+Cálculo Numérico
+Mineração de Dados II
+Visualização dos Dados em Ferramentas Estatísticas
+Probabilidade e Estatística III
+
+Antropologia e Cultura Brasileira
+Pesquisa de Mercado
+Inferência Bayesiana
+Análise de Regressão Univariada
+Data Science e Construção de Dashboards
+
+Optativa I
+Análise Estatística
+Estatística Aplicada
+Laboratórios de Simulação
+Estatística Aplicada a Economia
+
+Optativa II
+Econometria Aplicada
+Análise Multivariada de Dados
+Análise Bayesiana de Dados
+Pesquisa Operacional
+Estágio Supervisionado
+
+Desenvolvimento Humano e Social
+Tópicos Especiais Integradores
+Controle Estatístico de Qualidade
+Processos Estocásticos
+Projetos Estatísticos
+Atividades Complementares
+
+****************************************************************************
+Grade Curricular Estatistica FMU
+
+Código	Disciplina	Média	Sem/Ano	CH-FMU	CH-Trans
+010001	ESTATISTICA E PROBABILIDADE APLICADA	6.00	1.2020	66	
+0400ED	CALCULO NUMERICO COMPUTACIONAL	6.80	1.2021	33	
+0401ED	PESQUISA DE MERCADO EM ESTATISTICA	6.90	1.2021	66	
+050001	INFERENCIA BAYESIANA	8.40	1.2022	66	
+050002	PROBABILIDADES CONJUNTAS	6.40	1.2022	66	
+060002	LABORATORIOS DE SIMULACAO	7.20	2.2022	66	
+0100EK	METODOLOGIA CIENTIFICA	10.00	2.2023	66	
+0300ED	ALGEBRA LINEAR COMPUTACIONAL	8.20	2.2023	66	
+070001	ANALISE BAYESIANA DE DADOS	8.00	1.2023	66	
+080000	CONTROLE ESTATISTICO DE QUALIDADE	6.90	2.2023	66	
+080001	PROCESSOS ESTOCASTICOS	6.20	2.2023	66	
+## 020001	MINERACAO DE DADOS	8.50	2.2020	66	
+## 0201ED	GESTAO DAS ORGANIZACOES	6.80	2.2020	88	
+## 0501ED	DESENVOLVIMENTO HUMANO E SOCIAL	8.20	1.2022	88	
+## 060001	ESTATISTICA APLICADA A SAUDE	6.80	2.2022	66	
+## 070000	ANALISE MULTIVARIADA DE DADOS	9.50	1.2023	66	
+## 010002	ESTATISTICA DESCRITIVA	7.30	2.2020	66	
+## 010003	LOGICA DE PROGRAMACAO	6.40	1.2020	66	
+## && 0100ED	COMUNICACAO	8.30	1.2020	88	
+## 020000	CALCULO APLICADO - UMA VARIAVEL	7.60	2.2020	66	
+## 020002	LABORATORIO DE MATEMATICA E FISICA	6.90	1.2020	66	
+## 0200ED	DISTRIBUICOES DE PROBABILIDADE	9.40	2.2020	66	
+## 030001	INFERENCIA ESTATISTICA	8.00	2.2021	66	
+## 0301ED	INTRODUCAO A PROGRAMACAO EM BIG DATA	8.00	2.2021	66	
+## 0302ED	ESTATISTICA APLICADA AO DATA SCIENCE	6.80	2.2021	88	
+## 040000	VISUALIZACAO DE DADOS EM F.ESTATISTICAS	9.80	1.2021	66	
+## 040001	ANALISE DE REGRESSAO UNIVARIADA	9.20	1.2021	66	
+## 050000	SERIES E EQUACOES DIFERENCIAIS	6.00	1.2022	66	
+## 050003	FERRAMENTAS DE DASHBOARD	9.40	1.2022	66	
+## 0500ED	MACHINE LEARNING	7.70	1.2022	66	
+## 060000	ANALISE ESTATISTICA	9.00	2.2022	66	
+## 010000	PERSPECTIVAS EM ESTATISTICA	10.00	2.2023	33	
+## 0100EG	EMPREENDEDORISMO	9.40	2.2023	66	
+## 030000	CALCULO APLICADO - VARIAS VARIAVEIS	10.00	2.2023	66	
+## 0600ED	ESTATISTICA APLICADA A ECONOMIA	8.50	2.2023	66	
+## 070010	ECONOMETRIA APLICADA	8.20	1.2023	66	
+## 070GI0	ESTAGIO SUPERVISIONADO EM ESTATISTICA	8.00	1.2023	250	
+## 0800ED	TOPICOS ESP.INTEGRADORES EM ESTATISTICA	8.00	2.2023	66	
+## 0801ED	PROJETOS ESTATISTICOS	7.80	2.2023	33	
+## 0402ED	ANTROPOLOGIA E CULTURA BRASILEIRA	A CURSAR		88	
+## 080EH0	ATIVIDADES COMPLEMENTARES	REALIZADO	2.2023	200	296

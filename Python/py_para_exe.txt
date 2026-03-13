@@ -7,6 +7,7 @@ venv\Scripts\activate
 
 (3)	- instalando pyinstaler e pacotes dependentes:
 pip install pyinstaller pandas openpyxl numpy unidecode regex
+pip install pyinstaller pandas openpyxl numpy Unidecode
 
 (4) - executando pyinstaller criando o arquivo .exe:
 
@@ -15,5 +16,6 @@ pip install pyinstaller pandas openpyxl numpy unidecode regex
 
 	(4.1) - executavel sem caixa de CMD
 	pyinstaller --onefile --noconsole Conferencias.py
-	pyinstaller --onefile --noconsole Tratamento_de_dados_planilhas_tasy.py
 	pyinstaller --onefile --windowed Conferencias.py
+	pyinstaller --onefile --noconsole --icon=compara.ico Conferencias.py
+	pyinstaller --onefile --noconsole --icon=engrenagem.ico Tratamento_de_dados_planilhas_tasy.py

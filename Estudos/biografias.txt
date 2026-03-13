@@ -1,3 +1,6 @@
+- **Arbuthnot**
+  - Fundação da Estatística: Primeiro teste de hipóteses da história, precursos dos métodos modernos.
+
 - **Ronald Fisher**
   - Desenvolvimento da análise de variância (ANOVA).
   - Introdução dos conceitos de máxima verossimilhança e randomização em experimentos.
